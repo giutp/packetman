@@ -21,38 +21,40 @@ int main(){
     addr.sll_halen = sizeof(mac);
     memcpy(addr.sll_addr, mac, sizeof(mac));
 
-    char sendBuffer[8] = {0};
+    unsigned char sendBuffer[22] = {0};
+    sendBuffer[12] = 0x88;
+    sendBuffer[13] = 0xB5;
     for (int i = 0; i < 7; i++){
-        sendBuffer[i] = 'a';
+        sendBuffer[14 + i] = 'a';
     }
     
+    sendto(
+        sock, sendBuffer, sizeof(sendBuffer), 
+        0, (struct sockaddr *)&addr, sizeof(addr)
+        );
+    printf("pacote de %lu bytes disparado\n", sizeof(sendBuffer));
     // -----------------------------------------------
     
     // -------------------- Recebimento --------------------
     char recvBuffer[1024] = {0};
-    struct sockaddr_ll recvAddr;
-    socklen_t recvAddrLen = sizeof(recvAddr);
-    
-    do{
-        sendto(
-            sock, sendBuffer, sizeof(sendBuffer), 
-            0, (struct sockaddr *)&addr, sizeof(addr)
-            );
-        recvfrom(
+
+    while(1){
+        int tam = recvfrom(
             sock, recvBuffer, sizeof(recvBuffer), 0, 
-            (struct sockaddr *)&recvAddr, &recvAddrLen
+            NULL, NULL
             );
-        printf("recvAddr.sll_addr: %s\n", recvAddr.sll_addr);
-        for (int i = 0; i < 64; i++){
-            printf("recvBuffer[%d]: %02x ", i, recvBuffer[i]);
+        if (tam < 0) continue;
+
+        if (tam >= 22 && memcmp(sendBuffer + 14, recvBuffer + 14, 8) == 0){
+            printf("MAC Destino Recebido: %02x:%02x:%02x:%02x:%02x:%02x\n", 
+                    recvBuffer[0], recvBuffer[1], recvBuffer[2], 
+                    recvBuffer[3], recvBuffer[4], recvBuffer[5]);
+
+            printf("Mensagem: %s\n", recvBuffer + 14);
+            
+            break;
         }
-        printf("\n");
-    }while(memcmp(mac, recvAddr.sll_addr, sizeof(mac)) || memcmp(sendBuffer, recvBuffer + 14, sizeof(sendBuffer)));
-
-    // protocolo ethernet tem 14 bytes de header
-    printf("msg: %s\n", recvBuffer + 14);
-
-    // -----------------------------------------------
+    }
 
     return 0;
 }
