@@ -39,7 +39,7 @@ typedef enum kermit_types_t {
 typedef struct protocol_kermit_t {
     uint8_t starter_marker;             // 8 bits
     uint16_t size_sequence_type;        // 5 + 6 + 5 = 16 bits
-    char *data;                         // n bytes
+    uint8_t *data;                         // n bytes
     uint8_t crc;                        // 8 bits
 } kermit_t;
 
@@ -79,5 +79,11 @@ void create_control_msg(kermit_t *msg, uint8_t type, uint8_t seq);
 
 // Função wrapper: cria mensagem com dados chamando create_msg()
 void create_data_msg(kermit_t *msg, uint8_t size, uint8_t type, uint8_t seq, uint8_t *data);
+
+long long timestamp();
+
+int protocolo_e_valido(char *buffer, int tamanho_buffer);
+
+int recebe_mensagem(int soquete, int timeoutMillis, char *buffer, int tamanho_buffer);
 
 #endif
