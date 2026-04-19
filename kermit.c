@@ -4,8 +4,8 @@
 #include <net/if.h>             // if_nametoindex()
 #include <sys/socket.h>         // socket(), bind(), setsockopt(), AF_PACKET, SOCK_RAW, SOL_PACKET
 #include <string.h>             // memset()
-#include <stdlib.h>             // exit()
-#include <stdio.h>              // fprintf(),  stderr
+#include <stdlib.h>             // exit(), NULL
+#include <stdio.h>              // fprintf(), stderr
 #include <stdint.h>             // uint8_t
 
 #include "kermit.h"
@@ -76,7 +76,8 @@ int serialize_msg(kermit_t *deserialize_msg, uint8_t *serialize_msg){
 
     serialize_msg[size + 3] = calculate_crc8(serialize_msg, size + 3);
 
-    return (size + 3 + 1);
+    // TODO: mudar para constantes esses valores talvez?
+    return (3 + size + 1);
 }
 
 int deserialize_msg(uint8_t *serialize_msg, kermit_t *deserialize_msg){
@@ -109,11 +110,7 @@ static void create_msg(kermit_t *msg, uint8_t size, uint8_t type, uint8_t seq, u
     msg->size_sequence_type |= seq & 0x3f;
     msg->size_sequence_type <<= 5;
     msg->size_sequence_type |= type & 0x1f;
-
-    if (size > 0)
-        msg->data = data;
-    else
-        msg->data = NULL;
+    msg->data = data;
 }
 
 void create_control_msg(kermit_t *msg, uint8_t type, uint8_t seq){
