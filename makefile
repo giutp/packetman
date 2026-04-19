@@ -1,7 +1,7 @@
 # Flags padrões
 CC 		:= gcc
 CFLAGS 	:= -Wall -Wextra -Wpedantic -g
-LDFLAGS := 
+LDFLAGS := -lncurses
 
 # Todos os alvos
 TARGET_CLIENT := client
@@ -11,7 +11,7 @@ TARGET_SERVER := server
 COMMON := kermit.o
 
 # .o dos executaveis
-CLIENT_OBJS := client.o $(COMMON)
+CLIENT_OBJS := client.o interface.o $(COMMON)
 SERVER_OBJS := server.o $(COMMON)
 
 # ==============================================
