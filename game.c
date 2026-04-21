@@ -91,55 +91,23 @@ void init_entities(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *
     A ordem de ações é atualizar fantasmas -> atualizar pacman
 */
 
-// muda a posição do pacman com base no input de movimento
-void mov_pacman(char map[N][N], pacman_t *pacman, uint8_t movtype){
-    if((movtype == 'w') && (pacman->position.y > 0) && (map[pacman->position.x][pacman->position.y - 1] != 'X'))
-        pacman->position.y--;
-    else if((movtype == 'd') && (pacman->position.x < N-1) && (map[pacman->position.x + 1][pacman->position.y] != 'X'))
-        pacman->position.x++;
-    else if((movtype == 's') && (pacman->position.y < N-1) && (map[pacman->position.x][pacman->position.y + 1] != 'X'))
-        pacman->position.y++;
-    else if((movtype == 'a') && (pacman->position.x > 0) && (map[pacman->position.x - 1][pacman->position.y] != 'X'))
-        pacman->position.x--;
-}
+direction_t directions[4] = {UP, RIGHT, DOWN, LEFT};
 
-// verifica e retorna se houve colisão do pacman com algum fantasma
-int check_ghost_pacman_collision(pacman_t *pacman, ghost_t *ghosts){
+// muda a direção por x giros de 90 graus (sentido horário)
+direction_t change_direction(direction_t direction, int x){
+    int direction_number;
     for(int i = 0; i < 4; i++)
-        if((pacman->position.x == ghosts[i].position.x) && (pacman->position.y == ghosts[i].position.y))
-            return 1;
-
-    return 0;
+        if(directions[i] == direction)
+            direction_number = i;
+    
+    return directions[(direction_number + x + 4) % 4];
 }
 
-// verifica e retorna se houve colisão do pacman com alguma 
-int check_pellet_collision(pacman_t *pacman, pellet_t *pellets){
-    for(int i = 0; i < 6; i++)
-        if((!pellets[i].collected) && (pacman->position.x == pellets[i].position.x) && (pacman->position.y == pellets[i].position.y))
-            return i+1;
-
-    return 0;
-
+void move_ghosts(char map[N][N], ghost_t *ghosts){
+        
 }
 
-int update_pacman(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, uint8_t movtype){
-    map[pacman->position.x][pacman->position.y] = '0';
-    mov_pacman(map, pacman, movtype);
-
-    if(check_ghost_pacman_collision(pacman, ghosts)){
-        return -1; // morto
-    }
-
-    int pellet = check_pellet_collision(pacman, pellets);
-
-    if(pellet)
-        pellets[pellet].collected = 1;
-
-    map[pacman->position.x][pacman->position.y] = 'P';
-
-    return pellet; // retorna pellet coletada, 0 se não coletou
-}
-
+// muda a posição do pacman com base no input de movimento
 void move_pacman(char map[N][N], pacman_t *pacman, direction_t direction){
     coord_t new_coord;
     new_coord.x = pacman->position.x;
@@ -169,4 +137,43 @@ void move_pacman(char map[N][N], pacman_t *pacman, direction_t direction){
         pacman->count_mov++;
         if (pacman->count_mov % 5 == 0) pacman->radius++;
     }
+}
+
+// verifica e retorna se houve colisão do pacman com algum fantasma
+int check_ghost_pacman_collision(pacman_t *pacman, ghost_t *ghosts){
+    for(int i = 0; i < 4; i++)
+        if((pacman->position.x == ghosts[i].position.x) && (pacman->position.y == ghosts[i].position.y))
+            return 1;
+
+    return 0;
+}
+
+// verifica e retorna se houve colisão do pacman com alguma 
+int check_pellet_collision(pacman_t *pacman, pellet_t *pellets){
+    for(int i = 0; i < 6; i++)
+        if((!pellets[i].collected) && (pacman->position.x == pellets[i].position.x) && (pacman->position.y == pellets[i].position.y))
+            return i+1;
+
+    return 0;
+
+}
+
+int update_pacman(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, direction_t direction){
+    if(map[pacman->position.x][pacman->position.y] = 'P')
+        map[pacman->position.x][pacman->position.y] = '0';
+
+    move_pacman(map, pacman, direction);
+
+    if(check_ghost_pacman_collision(pacman, ghosts)){
+        return -1; // morto
+    }
+
+    int pellet = check_pellet_collision(pacman, pellets);
+
+    if(pellet)
+        pellets[pellet].collected = 1;
+
+    map[pacman->position.x][pacman->position.y] = 'P';
+
+    return pellet; // retorna pellet coletada, 0 se não coletou
 }
