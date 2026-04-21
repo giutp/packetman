@@ -58,4 +58,6 @@ int read_map(char *filepath, char map[N][N]);
 
 void init_entities(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets);
 
+int update_pacman(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, uint8_t movtype)
+
 #endif
