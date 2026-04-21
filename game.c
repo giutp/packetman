@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>             // uint8_t
 
@@ -25,14 +26,14 @@ int read_map(char *filepath, char map[N][N]){
     return 0;
 }
 
-static void init_ghost(ghost_t *ghost, int x, int y, ghost_color_t color){
+static void init_ghost(ghost_t *ghost, int y, int x, ghost_color_t color){
     ghost->position.x = x;
     ghost->position.y = y;
     ghost->color = color;
-    ghost->curr_direc = UP;
+    ghost->curr_direc = (direction_t)(rand()%4);
 }
 
-static void init_pellet(pellet_t *pellet, int x, int y, file_type_t type){
+static void init_pellet(pellet_t *pellet, int y, int x, file_type_t type){
     pellet->position.x = x;
     pellet->position.y = y;
     pellet->arc_type = type;
@@ -41,7 +42,7 @@ static void init_pellet(pellet_t *pellet, int x, int y, file_type_t type){
 
 void init_entities(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets){
     for (int i = 0; i < N; i++){
-        for  (int j = 0; j < N; j++){
+        for (int j = 0; j < N; j++){
             switch (map[i][j]){
             case 'P':
                 pacman->position.y = i;
@@ -137,4 +138,35 @@ int update_pacman(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *p
     map[pacman->position.x][pacman->position.y] = 'P';
 
     return pellet; // retorna pellet coletada, 0 se não coletou
+}
+
+void move_pacman(char map[N][N], pacman_t *pacman, direction_t direction){
+    coord_t new_coord;
+    new_coord.x = pacman->position.x;
+    new_coord.y = pacman->position.y;
+
+    switch (direction){
+    case UP:
+        new_coord.y--;
+        break;
+    case DOWN:
+        new_coord.y++;
+        break;
+    case LEFT:
+        new_coord.x--;
+        break;
+    case RIGHT:
+        new_coord.x++;
+        break;
+    }
+
+    if (((new_coord.y >= 0) && (new_coord.y < N)) 
+        && ((new_coord.x >= 0) && (new_coord.x < N)) 
+        && (map[new_coord.y][new_coord.x] != 'X')){
+        pacman->position.x = new_coord.x;
+        pacman->position.y = new_coord.y;
+
+        pacman->count_mov++;
+        if (pacman->count_mov % 5 == 0) pacman->radius++;
+    }
 }
