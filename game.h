@@ -58,13 +58,13 @@ int read_map(char *filepath, char map[N][N]);
 
 void init_entities(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets);
 
-int update_pacman(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, direction_t direction)
+int update_pacman(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, direction_t direction);
 
 void bind_pellets_files(pellet_t *pellets);
 
 int check_pellets(pacman_t *pacman, pellet_t *pellets);
 
 // IA de movimentação dos fantamas seguindo as regras de movimento de cada cor
-void move_ghosts(char map[N][N], ghost_t *ghosts);
+void move_ghosts(char map[N][N], ghost_t *ghosts, int round);
 
 #endif

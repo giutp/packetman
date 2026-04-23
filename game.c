@@ -162,7 +162,7 @@ static int check_wall_free(char map[N][N], coord_t ghost_coord, direction_t new_
     return -1;
 }
 
-void move_ghosts(char map[N][N], ghost_t *ghosts){
+void move_ghosts(char map[N][N], ghost_t *ghosts, int round){
     for (int i = 0; i < 4; i++){
         coord_t new_cord = ghosts[i].position;
 
@@ -211,6 +211,43 @@ void move_ghosts(char map[N][N], ghost_t *ghosts){
         }
         // Alterna entre mão direita e esquerda usando paridade do grid
         case GREEN:{
+            // Mão esquerda
+            if(round%2 == 1){
+                direction_t direction_relative_priority[4] = {
+                    (ghosts[i].curr_direc + LEFT) % 4, 
+                    (ghosts[i].curr_direc + UP) % 4, 
+                    (ghosts[i].curr_direc + RIGHT) % 4, 
+                    (ghosts[i].curr_direc + DOWN) % 4
+                };
+
+                int j = 0;
+                while(j < 4 && check_wall_free(map, ghosts[i].position, direction_relative_priority[j], &new_cord) != 0) j++;
+
+                if (j < 4){
+                    ghosts[i].prev_direc = ghosts[i].curr_direc;
+                    ghosts[i].curr_direc = direction_relative_priority[j];
+                    ghosts[i].position = new_cord;
+                }
+            }
+            // Mão direita
+            else if(round%2 == 0){
+                direction_t direction_relative_priority[4] = {
+                    (ghosts[i].curr_direc + RIGHT) % 4,
+                    (ghosts[i].curr_direc + UP) % 4, 
+                    (ghosts[i].curr_direc + LEFT) % 4, 
+                    (ghosts[i].curr_direc + DOWN) % 4
+                };
+
+                int j = 0;
+                while(j < 4 && check_wall_free(map, ghosts[i].position, direction_relative_priority[j], &new_cord) != 0) j++;
+
+                if (j < 4){
+                    ghosts[i].prev_direc = ghosts[i].curr_direc;
+                    ghosts[i].curr_direc = direction_relative_priority[j];
+                    ghosts[i].position = new_cord;
+                }
+            }
+
 
             break;
         }
