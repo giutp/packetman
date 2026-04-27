@@ -5,6 +5,8 @@
 
 #include "game.h"
 
+char symbols[11] = {'P', 'R', 'B', 'G', 'Y', '1', '2', '3', '4', '5', '6'};
+
 int read_map(char *filepath, char map[N][N]){
     FILE *arc = fopen(filepath, "r");
 
@@ -23,6 +25,42 @@ int read_map(char *filepath, char map[N][N]){
 
     fclose(arc);
 
+    return 0;
+}
+
+coord_t rand_coord(){
+    coord_t coord;
+    coord.x = rand()%N;
+    coord.y = rand()%N;
+    return coord;
+}
+
+int is_inside_P(coord_t coord){
+    int x = coord.x;
+    int y = coord.y;
+    return (x >= 4 && x <= 9) && (y >= 7 && y <= 11);
+}
+
+int is_inside_R(coord_t coord){
+    int x = coord.x;
+    int y = coord.y;
+    return (x >= 13 && x <= 24) && (y >= 7 && y <= 11);
+}
+
+int use_default_map(char map[N][N]){
+    if (!read_map("default.csv", map))
+        return -1;
+
+    int i = 0;
+    coord_t coord;
+    while(i<11){
+        coord = rand_coord();
+        if(!is_inside_P(coord) || !is_inside_R(coord) || map[coord.y][coord.x] == '0'){
+            map[coord.y][coord.x] = symbols[i];
+            i++;
+        }
+    }
+    
     return 0;
 }
 
@@ -301,8 +339,8 @@ int check_pellet_collision(pacman_t *pacman, pellet_t *pellets){
 
 // essa funçaão vem de depois dos fantasmas
 int update_pacman(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, direction_t direction){
-    if(map[pacman->position.x][pacman->position.y] = 'P')
-        map[pacman->position.x][pacman->position.y] = '0';
+    if(map[pacman->position.y][pacman->position.x] = 'P')
+        map[pacman->position.y][pacman->position.x] = '0';
 
     move_pacman(map, pacman, direction);
 
@@ -317,7 +355,7 @@ int update_pacman(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *p
         pacman->pellets++;
     }
 
-    map[pacman->position.x][pacman->position.y] = 'P';
+    map[pacman->position.y][pacman->position.x] = 'P';
 
     return pellet; // retorna pellet coletada, 0 se não coletou
 }
