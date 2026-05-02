@@ -32,6 +32,4 @@ int main(){
     size_t bytesRecv = recv(sock, buffer, sizeof(buffer) - 1, 0);
     buffer[bytesRecv] = '\0';
     printf("Mensagem recebida: %s\n", buffer+14);
-
-    return 0;
 }
