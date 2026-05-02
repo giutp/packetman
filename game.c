@@ -216,7 +216,7 @@ void move_ghosts(char map[N][N], ghost_t *ghosts){
         }
         // Alterna entre mão direita e esquerda usando paridade do grid
         case GREEN:{
-
+            
             break;
         }
 

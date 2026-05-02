@@ -39,7 +39,7 @@ typedef enum kermit_types_t {
 typedef struct protocol_kermit_t {
     uint8_t starter_marker;             // 8 bits
     uint16_t size_sequence_type;        // 5 + 6 + 5 = 16 bits
-    uint8_t *data;                         // n bytes
+    uint8_t *data;                      // n bytes
     uint8_t crc;                        // 8 bits
 } kermit_t;
 
