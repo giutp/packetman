@@ -3,6 +3,8 @@
 
 #include "utils.h"
 
+// Quantidade de fantasmas
+#define NUM_GHOSTS 4
 
 // Cor dos fantasmas
 typedef enum {

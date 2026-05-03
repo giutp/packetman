@@ -6,6 +6,9 @@
 #include "ghosts.h"
 #include "pellets.h"
 
+// Quantidade de entidades
+#define NUM_ENT 11
+
 // Ler um arquivo .csv e monta o mapa do jogo
 // Retorna:
 // + -1: falha em abrir o arquivo (mapa)
@@ -22,8 +25,6 @@ int randomizer_entities(char map[N][N]);
 // Atribui as coordenadas iniciais com base no mapa (map[N][N])
 // Limpa todos os simbolos após inicialização
 void init_entities(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets);
-
-int update_pacman(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, direction_t direction);
 
 // Checa se o Pacman e algum fantasma se cruzaram
 // Retorna:
