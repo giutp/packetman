@@ -3,6 +3,9 @@
 
 #include "utils.h"
 
+// Tamanho máximo do raio
+#define MAX_RADIUS 10
+
 // Atributos do Pacman
 typedef struct pacman {
     coord_t position;               // coordenada cartesiana

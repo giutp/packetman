@@ -10,7 +10,6 @@
 // Retorna:
 // + -1: falha em abrir o arquivo (mapa)
 // +  0: mapa inicializado com sucesso
-//
 int read_map(char *filepath, char map[N][N]);
 
 // Inicializa as entidades em lugares aleatórios válidos
@@ -37,5 +36,17 @@ int check_ghost_pacman_collision(pacman_t *pacman, ghost_t *ghosts);
 // +  0: não encontrou
 // + id: o id da pastilha encontrada (1..6)
 int check_pellets_pacman_collision(pacman_t *pacman, pellet_t *pellets);
+
+// Constroi a submatriz com base no raio de visão do Pacman
+// Devolve a submatriz no buffer passado de parâmetro
+void build_submatrix(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, uint8_t *buffer);
+
+// Verifica e atualiza todas as entidades do mapa
+// Retorna:
+// + -1: Pacman morreu (game over)
+// + 0: entidades apenas se deslocaram
+// + [1..6]: id da pastilha coletada
+// + 10: Pacman coletou todas as pastilhas (win)
+int update_world(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, direction_t direction);
 
 #endif

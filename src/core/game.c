@@ -1,5 +1,6 @@
 #include <string.h>     // strtok
 #include <stdlib.h>     // rand()
+#include <stdint.h>     // uint_8
 #include <stdio.h>      // fopen, fclose
 
 #include "game.h"
@@ -27,6 +28,23 @@ static void init_pellet(pellet_t *pellet, int y, int x){
     pellet->position.x = x;
     pellet->position.y = y;
     pellet->collected = 0;
+}
+
+// Calcula se alguma entidade está no campo de visão do Pacman
+// Retorna:
+// + 0: não está no campo de visão 
+// + 1: está no campo de visão
+static int is_inside_camera(coord_t e, coord_t st_c, coord_t en_c){
+    if (e.y >= st_c.y && e.y < en_c.y && e.x >= st_c.x && e.x < en_c.x) return 1;
+
+    return 0;
+}
+
+// Calcula o índice relativo da entidade dentro do buffer da submatriz
+// Retorna:
+// + índice no vetor
+static index_relative(coord_t e, coord_t st_c, int size_grid){
+    return (e.y - st_c.y) * size_grid + (e.x - st_c.x);
 }
 
 int read_map(char *filepath, char map[N][N]){
@@ -148,25 +166,79 @@ int check_pellets_pacman_collision(pacman_t *pacman, pellet_t *pellets){
     return 0;
 }
 
-// essa funçaão vem de depois dos fantasmas
-int update_pacman(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, direction_t direction){
-    if(map[pacman->position.y][pacman->position.x] == 'P')
-        map[pacman->position.y][pacman->position.x] = '0';
+void build_submatrix(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, uint8_t *buffer){
+    // Posições relativas à visão do Pacman
+    coord_t center = pacman->position;
+    int square_size = (pacman->radius * 2) + 1;
 
+    coord_t coord_start, coord_end;
+    coord_start.y = pacman->position.y - pacman->radius;
+    coord_start.x = pacman->position.x - pacman->radius;
+    coord_end.y = coord_start.y + square_size;
+    coord_end.x = coord_start.x + square_size;
+
+    int i_buffer = 0;
+    // Preenche a submatriz com vazio, parede ou chão
+    for (int i = coord_start.y; i < coord_end.y; i++){
+        for (int j = coord_start.x; j < coord_end.x; j++){
+            if (i < 0 || i >= N || j < 0 || j >= N) buffer[i_buffer] = '#';
+            else buffer[i_buffer] = map[i][j];
+            i_buffer++;
+        }
+    }
+
+    // Inclui as pastilhas dentro da submatriz
+    for (int i = 0; i < 6; i++){
+        if (!pellets[i].collected && is_inside_camera(pellets[i].position, coord_start, coord_end)){
+            i_buffer = index_relative(pellets[i].position, coord_start, square_size);
+            buffer[i_buffer] = '0' + i;
+        }
+    }
+
+    // Inclui os fantasmas dentro da submatriz
+    for (int i = 0; i < 4; i++){
+        if (is_inside_camera(ghosts[i].position, coord_start, coord_end)){
+            i_buffer = index_relative(ghosts[i].position, coord_start, square_size);
+            switch (ghosts[i].color){
+            case RED:
+                buffer[i_buffer] = 'R';
+                break;
+            
+            case BLUE:
+                buffer[i_buffer] = 'B';
+                break;
+
+            case GREEN:
+                buffer[i_buffer] = 'G';
+                break;
+
+            case YELLOW:
+                buffer[i_buffer] = 'Y';
+                break;
+            }
+        }
+    }
+
+    // Incluir o Pacman na submatriz (centro)
+    i_buffer = pacman->radius * square_size + pacman->radius;
+    buffer[i_buffer] = 'P';
+}
+
+int update_world(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, direction_t direction){
     move_pacman(map, pacman, direction);
+    if (check_ghost_pacman_collision(pacman, ghosts)) return -1;
 
-    if(check_ghost_pacman_collision(pacman, ghosts)){
-        return -1; // morto
-    }
-
-    int pellet = check_pellets_pacman_collision(pacman, pellets);
-
-    if(pellet){
-        pellets[pellet].collected = 1;
+    int id_pellet = check_pellets_pacman_collision(pacman, pellets);
+    if (id_pellet != 0){
+        pellets[id_pellet-1].collected = 1;
         pacman->pellets++;
+        if (pacman->pellets >= 6) return 10;
+
+        return id_pellet;
     }
 
-    map[pacman->position.y][pacman->position.x] = 'P';
+    move_ghosts(map, ghosts);
+    if (check_ghost_pacman_collision(pacman, ghosts)) return -1;
 
-    return pellet; // retorna pellet coletada, 0 se não coletou
+    return 0;
 }
