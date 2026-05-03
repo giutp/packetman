@@ -17,18 +17,14 @@ COMMON_SRC  := $(SRC_DIR)/network/kermit.c
 
 # Arquivos do Cliente (Interface + Rede)
 # Corrigido: client.c está solto em src/
-CLIENT_SRC  := $(SRC_DIR)/client.c \
-               $(SRC_DIR)/core/interface.c \
+CLIENT_SRC  := $(SRC_DIR)/client.c $(SRC_DIR)/core/interface.c \
                $(COMMON_SRC)
 
 # Arquivos do Servidor (Lógica do Jogo + Rede)
 # Corrigido: server.c está solto em src/ (main.c ignorada)
-SERVER_SRC  := $(SRC_DIR)/server.c \
-               $(SRC_DIR)/core/game.c \
-               $(SRC_DIR)/core/ghosts.c \
-               $(SRC_DIR)/core/pacman.c \
+SERVER_SRC  := $(SRC_DIR)/server.c $(SRC_DIR)/core/game.c \
+               $(SRC_DIR)/core/ghosts.c $(SRC_DIR)/core/pacman.c \
                $(SRC_DIR)/core/pellets.c \
-               $(SRC_DIR)/core/utils.c \
                $(COMMON_SRC)
 
 # Troca a extensão .c por .o

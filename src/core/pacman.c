@@ -1,4 +1,4 @@
-#include "../include/pacman.h"
+#include "pacman.h"
 
 void move_pacman(char map[N][N], pacman_t *pacman, direction_t direction){
     coord_t new_coord;

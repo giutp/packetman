@@ -11,7 +11,7 @@ typedef struct pacman {
     int pellets;                    // contador de pastilhas coletadas
 } pacman_t;
 
-// Move o Pacman na direção desejada se for uma posição válida no mapa
+// Move o Pacman na direção desejada se for uma posição válida no mapa (não-parede)
 void move_pacman(char map[N][N], pacman_t *pacman, direction_t direction);
 
 #endif

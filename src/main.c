@@ -11,6 +11,7 @@
 // main criada puramente para testes, nao sera usada (depois vou apagar)
 int main(){
     // AREA DE TESTES DO pellet.c
+    // Testado e funcionando (mais testes sao bem vindo)
 
     pellet_t pellets[6];
 
@@ -22,14 +23,15 @@ int main(){
         for (int i = 0; i < 6; i++){
             printf("\nCaminho: %s\n", pellets[i].filepath);
             printf("Tipo: %d\n\n", pellets[i].arc_type);
-
-            const char *xdg = "xdg-open ";
-            int len = strlen(pellets[i].filepath) + strlen(xdg) + 1;
-            char *path = (char *)malloc(len);
-            snprintf(path, len, "%s%s", xdg, pellets[i].filepath);
-            printf("%s\n", path);
-            system(path);
-            free(path);
+            // Desse jeito, memoria vai precisar ser desalocada
+            free(pellets[i].filepath);
+            // const char *xdg = "xdg-open ";
+            // int len = strlen(pellets[i].filepath) + strlen(xdg) + 1;
+            // char *path = (char *)malloc(len);
+            // snprintf(path, len, "%s%s", xdg, pellets[i].filepath);
+            // printf("%s\n", path);
+            // system(path);
+            // free(path);
         }
         break;
     

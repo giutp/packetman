@@ -12,7 +12,7 @@ typedef enum {
     LEFT
 } direction_t;
 
-// Coordenada cartesiana (matriz) das entidades
+// Coordenada cartesiana (posição da matriz) das entidades
 typedef struct coord {
     int x;
     int y;

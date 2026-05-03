@@ -20,5 +20,11 @@ typedef struct ghost {
     direction_t curr_direc;         // direção atual
 } ghost_t;
 
+// IA de movimentação dos fantasmsas, seguindo as seguintes regras:
+// + Vermelho: regra da mão esquerda
+// + Azul: regra da mão direita
+// + Verde: alterna entre mão esquerda e direita
+// + Amarelo: aleatório
+void move_ghosts(char map[N][N], ghost_t *ghosts);
 
 #endif 

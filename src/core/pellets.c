@@ -1,9 +1,9 @@
 #define _DEFAULT_SOURCE
 
-#include <string.h>
-#include <dirent.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <string.h>     // strcmp, strlen, strrchr
+#include <dirent.h>     // opendir, readdir, closedir
+#include <stdlib.h>     // malloc, free
+#include <stdio.h>      // snprintf
 
 #include "pellets.h"
 
@@ -19,7 +19,7 @@ int bind_pellets_files(pellet_t *pellets){
     // Varre o diretório aberto
     int valid = 1;
     struct dirent *file;
-    while(((file = readdir(direc)) != NULL) && valid){
+    while(((file = readdir(direc)) != NULL) && (valid)){
         // Arquivo regular
         if (file->d_type == DT_REG){
             // Checa extensão do arquivo
@@ -63,6 +63,7 @@ int bind_pellets_files(pellet_t *pellets){
 
     closedir(direc);
 
+    // Libera memória alocada em caso de erro
     if (count_txt != 2 || count_jpg != 2 || count_mp4 != 2 || !valid) {
         for (int i = 0; i < count_txt; i++) free(path_txt[i]);
         for (int i = 0; i < count_jpg; i++) free(path_jpg[i]);
