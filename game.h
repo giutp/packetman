@@ -49,6 +49,7 @@ typedef struct pellet {
     int collected;
 } pellet_t;
 
+
 /* Ler um arquivo .csv e monta o mapa do jogo
     Retorna:
         * -1: falha em abrir o arquivo
@@ -66,5 +67,7 @@ int check_pellets(pacman_t *pacman, pellet_t *pellets);
 
 // IA de movimentação dos fantamas seguindo as regras de movimento de cada cor
 void move_ghosts(char map[N][N], ghost_t *ghosts, int round);
+
+void get_visible_map(char map[N][N], pacman_t *pacman, char visible_map[N][N]);
 
 #endif

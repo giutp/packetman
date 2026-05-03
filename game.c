@@ -359,3 +359,19 @@ int update_pacman(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *p
 
     return pellet; // retorna pellet coletada, 0 se não coletou
 }
+
+void get_visible_map(char map[N][N], pacman_t *pacman, char visible_map[N][N]){
+    int y_max = pacman->position.y + pacman->radius;
+    int y_min = pacman->position.y - pacman->radius;
+    int x_max = pacman->position.x + pacman->radius;
+    int x_min = pacman->position.x - pacman->radius;
+    
+    for(int i = 0; i < N; i++){
+        for(int j = 0; j < N; j++){
+            if (i >= y_min && i <= y_max && j >= x_min && j <= x_max)
+                visible_map[i][j] = map[i][j];
+            else
+                visible_map[i][j] = '?';
+        }
+    }
+}
