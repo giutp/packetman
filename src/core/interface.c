@@ -2,8 +2,10 @@
 
 void init_interface(){
     initscr();
+
     cbreak();
     noecho();
+
     curs_set(0);
-    nodelay(stdscr, TRUE);
+    // nodelay(stdscr, TRUE);
 }

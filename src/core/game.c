@@ -8,6 +8,8 @@
 char symbols[11] = {'P', 'R', 'B', 'G', 'Y', '1', '2', '3', '4', '5', '6'};
 
 // Sorteia uma coordenada dentro dos limites do mapa (NxN)
+// Retorna:
+// + Coordenada válida [0..N-1]
 static coord_t rand_coord(){
     coord_t coord;
     coord.x = rand()%N;
@@ -43,7 +45,7 @@ static int is_inside_camera(coord_t e, coord_t st_c, coord_t en_c){
 // Calcula o índice relativo da entidade dentro do buffer da submatriz
 // Retorna:
 // + índice no vetor
-static index_relative(coord_t e, coord_t st_c, int size_grid){
+static int index_relative(coord_t e, coord_t st_c, int size_grid){
     return (e.y - st_c.y) * size_grid + (e.x - st_c.x);
 }
 
@@ -163,7 +165,6 @@ int check_pellets_pacman_collision(pacman_t *pacman, pellet_t *pellets){
 
 void build_submatrix(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, uint8_t *buffer){
     // Posições relativas à visão do Pacman
-    coord_t center = pacman->position;
     int square_size = (pacman->radius * 2) + 1;
 
     coord_t coord_start, coord_end;
@@ -214,7 +215,7 @@ void build_submatrix(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t
         }
     }
 
-    // Incluir o Pacman na submatriz (centro)
+    // Inclui o Pacman na submatriz (centro)
     i_buffer = pacman->radius * square_size + pacman->radius;
     buffer[i_buffer] = 'P';
 }
