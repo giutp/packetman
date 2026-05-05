@@ -42,7 +42,7 @@ typedef struct protocol_kermit_t {
     uint8_t type: 5;
     uint8_t *data;                      // n bytes
     uint8_t crc;                        // 8 bits
-} kermit_t;
+} __attribute__((packed)) kermit_t;
 
 
 // Cria o raw scoket baseado no nome da interface
