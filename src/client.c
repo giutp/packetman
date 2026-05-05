@@ -7,131 +7,125 @@
 #include "kermit.h"
 #include "interface.h"
 
+#define MIN_W 80
+#define MIN_H 24
+
 int main(int argc, char **argv){
-    // if (argc < 2){
-    //     fprintf(stderr, "Necessario informar interface da placa de rede\n");
-    //     exit(-1);
-    // }
+    // Inicalizações da rede
+    if (argc < 2){
+        fprintf(stderr, "Necessário informar a placa de rede!\n");
+        return -1;
+    }
 
-    init_interface();
-    refresh();
+    int socket = create_raw_socket(argv[1]);
 
-    uint8_t seq = 0;
+    unsigned char send_buffer[50];
+    unsigned char rcv_buffer[50];
+    send_buffer[12] = 0x00;
+    send_buffer[13] = 0x00;
     kermit_t send_msg, rcv_msg;
-    uint8_t buffer[36];
 
-    int lin, col;
-    
-    int min_lin = 40, min_col = 40;
-    
-    do{
-        getmaxyx(stdscr, lin, col);
-        clear();
-        mvprintw(0, 0, "Terminal muito pequeno!");
-        mvprintw(1, 0, "Minimo: %d linhas x %d colunas", min_lin, min_col);
-        mvprintw(2, 0, "Atual: %d linhas x %d colunas", lin, col);
-        refresh();
+
+    // Inializações do ncurses
+    init_interface();
+    // x = colunas (largura da tela)
+    // y = linhas (altura da tela)
+    // 80x24 = 80 colunas e 24 linhas
+    // ncurses ao contrario (igual matriz em C [linhas][colunas] = [y][x])
+    int console_width, console_heght;
+    getmaxyx(stdscr, console_heght, console_width);
+    if (console_heght < MIN_H || console_width < MIN_W){
+        endwin();
+        
+        fprintf(stderr, "Erro: janela do terminal abaixo do mínimo %dx%d\n", MIN_W, MIN_H);
+        fprintf(stderr, "Atual: %dx%d\n", console_width, console_heght);
+        fprintf(stderr, "Aumente o tamanho da janela e tente novamente!\n");
+        return -1;
+    }
+
+    // proporcao das janelas (game e log)
+    int game_w = (console_width * 50) / 80;
+    int log_w = console_width - game_w;
+    int game_h, log_h;
+    game_h = log_h = console_heght;
+    // printf("Larguras definidas\n");
+    // printf("game: %d\n", game_w);
+    // printf("log: %d\n", log_w);
+
+    refresh();
+    WINDOW *game_window = newwin(game_h, game_w, 0, 0);
+    WINDOW *log_window = newwin(log_h, log_w, 0, 0 + game_w);
+    box(game_window, 0, 0);
+    box(log_window, 0, 0);
+
+    wrefresh(game_window);
+    wrefresh(log_window);
+
+    int flag = 0;
+    // Loop game
+    // Fluxo do cliente (pelo menos por agora ate eu ver que errei alguma parte)
+    // recv -> verificacao (crc+nack/ack) -> download/desenhar -> input -> cria mensagem -> envia -> espera (nack/ack do servidor) -> recv
+    while(1){
+        // recv (loop de recepcao)
+        // + ACK e NACK
+        while(1){
+            recv(socket, rcv_buffer, sizeof(rcv_buffer), 0);
+
+            
+            
+            if (deserialize_msg(rcv_buffer+14, &rcv_msg)){
+                uint8_t size, sequence, type;
+            }
+        }
+
+        // Monta a struct e verifica o tipo
+        // Desenha ou download
+        
+        // input
+
+        // 
+
 
         int key = getch();
-        if (key == 'q'){
-            endwin();
-            return 0;
+        
+        switch(key){
+        case 'W':
+        case 'w':
+        case KEY_UP:
+            break;
+        
+        case 'D':
+        case 'd':
+        case KEY_RIGHT:
+            break;
+
+        case 'S':
+        case 's':
+        case KEY_DOWN:
+            break;
+        
+        case 'A':
+        case 'a':
+        case KEY_LEFT:
+            break;
+        
+        // Pause
+        case 'Q':
+        case 'q':
+            flag = 1;
+            break;
         }
-    }while(lin < min_lin || col < min_col);
-    
 
-    
-    WINDOW *win1 = newwin(lin, col/2, 0, 0);
-    WINDOW *win2 = newwin(lin, col/2, 0, col/2);
-    box(win1, 0, 0);
-    box(win2, 0, 0);
-    
-    wprintw(win1, "col: %d", col/2);
-    wprintw(win2, "col: %d", col/2);
-    wrefresh(win1);
-    wrefresh(win2);
+        if (flag) break;
 
-    refresh();
+        // cria mensagem
 
-    int key = getch();
-    // while (1)
-    // {
-    //     if (key != ERR) break;
-    // }
+
+        // send (loop de envio)
+        // espera NACK E ACK
+    }
     
-
     endwin();
     return 0;
-
-    // uint8_t seq = 0;
-    // kermit_t send_msg, rcv_msg;
-    // uint8_t buffer[36];
-
-    // int socket = create_raw_socket(argv[1]);
-
-    // /*  ================================================
-    //     Tentativa de criar a logica do client, mas sem o servidor
-    //     para ficar testando e debbugando ficou dificil. Por isso
-    //     partir para criar o servidor.
-    //     ================================================ */
-    // init_interface();
-    // refresh();
-
-    // WINDOW *game_window = newwin(20, 30, 0 , 0);
-    // WINDOW *log_window = newwin(20, 40, 0, 32);
-    // box(game_window, 0, 0);
-    // box(log_window, 0, 0);
-    // wrefresh(game_window);
-    // wrefresh(log_window);
     
-    // // Isso ta uma bagunca, vou iniciar o servidor para ter como testar algo
-    // while(1){
-    //     int key = getch();
-    //     if (key != ERR){
-    //         if (key == 'q') break;
-
-    //         int valid = 0;
-    //         switch (key){
-    //         case 'w':
-    //             valid = 1;
-    //             create_control_msg(&send_msg, CIMA, seq);
-    //             break;
-    //         case 'a':
-    //             valid = 1;
-    //             create_control_msg(&send_msg, ESQUERDA, seq);
-    //             break;
-    //         case 's':
-    //             valid = 1;
-    //             create_control_msg(&send_msg, BAIXO, seq);
-    //             break;
-    //         case 'd':
-    //             valid = 1;
-    //             create_control_msg(&send_msg, DIREITA, seq);
-    //             break;
-    //         }
-            
-    //         mvwprintw(log_window, 1, 1, "Ultima tecla: %c", key);
-    //         wrefresh(log_window);
-
-    //         if (valid){
-    //             int flag = 0;
-    //             do{
-    //                 int num_bytes = serialize_msg(&send_msg, buffer);
-    //                 send(socket, buffer, num_bytes, 0);
-
-    //                 // VALOR DE TIMEOUT AINDA NAO DEFINIDO -- 2000 POR ENQUANTO
-    //                 if (recebe_mensagem(socket, 2000, buffer, 36) != -1){
-    //                     if(deserialize_msg(buffer, &rcv_msg) == 0 && ((rcv_msg.size_sequence_type & 0x1f) == ACK) && (((rcv_msg.size_sequence_type >> 5) & 0x3f) == seq)){
-
-    //                         flag = 1;
-    //                         seq++;
-    //                         if (seq > 63) seq = 0;
-    //                     }
-    //                 }
-    //             } while (!flag);     
-    //         }   
-    //     }
-    // }
-    
-    // endwin();
 }
