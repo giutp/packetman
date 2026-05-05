@@ -51,17 +51,22 @@ int is_valid_start_marker(uint8_t *buffer){
 
 int is_valid_crc(uint8_t *buffer){
 
-    uint16_t size_sequence_type;
-    size_sequence_type = buffer[1];
-    size_sequence_type <<= 8;
-    size_sequence_type = buffer[2];
+    // uint16_t size_sequence_type;
+    // size_sequence_type = buffer[1];
+    // size_sequence_type <<= 8;
+    // size_sequence_type = buffer[2];
 
-    uint8_t size = (size_sequence_type >> 11) & 0x1f;
-
+    // uint8_t size = (size_sequence_type >> 11) & 0x1f;
+    uint8_t size = buffer[1];
     uint8_t crc_buffer, crc_check;
-    crc_buffer = buffer[size+3];
-    crc_check = calculate_crc8(buffer, 3 + size);
-    return (crc_buffer == crc_check);
+    crc_buffer = buffer[3+size];
+    crc_check = calculate_crc8(buffer, 3+size);
+    return(crc_buffer == crc_buffer);
+
+    // uint8_t crc_buffer, crc_check;
+    // crc_buffer = buffer[size+3];
+    // crc_check = calculate_crc8(buffer, 3 + size);
+    // return (crc_buffer == crc_check);
 }
 
 uint8_t calculate_crc8(uint8_t *buffer, int size_buffer){

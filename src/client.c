@@ -21,9 +21,10 @@ int main(int argc, char **argv){
 
     unsigned char send_buffer[50];
     unsigned char rcv_buffer[50];
-    send_buffer[12] = 0x00;
-    send_buffer[13] = 0x00;
+    send_buffer[12] = 0x88;
+    send_buffer[13] = 0x88;
     kermit_t send_msg, rcv_msg;
+    uint8_t curr_seq = 0, expected_seq = 0;
 
 
     // Inializações do ncurses
@@ -69,8 +70,49 @@ int main(int argc, char **argv){
         // recv (loop de recepcao)
         // + ACK e NACK
         while(1){
+            // ========================
+            // Etapa de recepcao
+            // recebe mensagem do servidor
             recv(socket, rcv_buffer, sizeof(rcv_buffer), 0);
+            
+            // mensagem chegou eh do servidor? (se nao for, eh outra mensagem que pode ser ignorada)
+            if (is_valid_start_marker(rcv_buffer+14)){
+                // mensagem chegou tem o crc valido?
+                if(is_valid_crc(rcv_buffer+14)){
+                    deserialize_msg(rcv_buffer+14, &rcv_msg);
+                    if (rcv_msg.sequence == expected_seq){
+                        create_control_msg(&send_msg, ACK, rcv_msg.sequence);
+                        int send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                        send(socket, send_buffer, send_bytes+14, 0);
+                        curr_seq = expected_seq;
+                        expected_seq = (expected_seq + 1) % 32;
 
+                        // Desenhar mapa
+                        if (rcv_msg.type == VISUALIZACAO){
+                            
+                        }
+                        // Download
+                        else if (rcv_msg.type == DADOS){
+
+                        }
+                        // Fim do pacote
+                        else if (rcv_msg.type == FIM_DA_TRANSMISSAO){
+                            break;
+                        }
+                    }
+                    else{
+                        create_control_msg(&send_msg, ACK, rcv_msg.sequence);
+                        int send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                        send(socket, send_buffer, send_bytes+14, 0);
+                    }
+                }
+                // crc invalido envia NACK
+                else{
+                    create_control_msg(&send_msg, NACK, expected_seq);
+                    int send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                    send(socket, send_buffer, send_bytes+14, 0);
+                }
+            }
             
             
             if (deserialize_msg(rcv_buffer+14, &rcv_msg)){
