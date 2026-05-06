@@ -39,7 +39,6 @@ typedef struct protocol_kermit_t {
     uint8_t crc;                        // 8 bits
 } kermit_t;
 
-
 // Cria o raw scoket baseado no nome da interface
 // Retorna:
 // + -1: erro de criação, bind ou setsockopt

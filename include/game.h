@@ -23,8 +23,6 @@ int randomizer_entities(char map[N][N]);
 // Limpa todos os simbolos após inicialização
 void init_entities(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets);
 
-int update_pacman(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, direction_t direction);
-
 // Checa se o Pacman e algum fantasma se cruzaram
 // Retorna:
 // + 0: não se cruzaram
