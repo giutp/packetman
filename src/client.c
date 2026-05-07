@@ -6,6 +6,7 @@
 
 #include "kermit.h"
 #include "interface.h"
+#include "utils.h"
 
 #define MIN_W 80
 #define MIN_H 24
@@ -70,102 +71,123 @@ int main(int argc, char **argv){
     while(1){
         // recv (loop de recepcao)
         // + ACK e NACK
+        int flag_ntw = 0;
         while(1){
             // ========================
-            // Etapa de recepcao
+            // Etapa de recepcao (rcv + verificacao + download/desenha)
             // recebe mensagem do servidor
             recv(socket, rcv_buffer, sizeof(rcv_buffer), 0);
             
             // Mensagem do servidor (marcador de inicio)
+            // Qualquer outras mensagens serao ignoradas
+            // ESTA SEM TIMEOUT POR ENQUANTO 
+            // (ah, mas acho que nao precisa de timeout porque seria o timeout de ack e nack...)
+            // FALTA COLOCAR FREE NA MENSAGEM CRIADA EM CADA CASO
             if (is_valid_start_marker(rcv_buffer)){
-                // Mensagem valida (CRC certo)
+                // Mensagem valida (CRC certo -- ACK)
                 if(is_valid_crc(rcv_buffer)){
-                    deserialize_msg(rcv_buffer+14, &rcv_msg);                       //
-                    if (rcv_msg.sequence == expected_seq){
-                        create_control_msg(&send_msg, ACK, rcv_msg.sequence);
-                        int send_bytes = serialize_msg(&send_msg, send_buffer+14);
-                        send(socket, send_buffer, send_bytes+14, 0);
-                        curr_seq = expected_seq;
-                        expected_seq = (expected_seq + 1) % 32;
+                    deserialize_msg(rcv_buffer, &rcv_msg);                       // Monta a struct
+                    // Mensagem recebida eh a esperada
+                    if (rcv_msg.sequence == expected_seq){                       
+                        create_control_msg(&send_msg, ACK, rcv_msg.sequence);   // Cria mensagem (coloca valores na struct)
+                        int send_bytes = serialize_msg(&send_msg, send_buffer); // serializa a struct (coloca no buffer)
+                        send(socket, send_buffer, send_bytes, 0);               // envia 
+                        curr_seq = expected_seq;                                // atualiza sequencias
+                        expected_seq = (expected_seq + 1) % 32;                 
 
-                        // Desenhar mapa
-                        if (rcv_msg.type == VISUALIZACAO){
-                            
-                        }
-                        // Download
-                        else if (rcv_msg.type == DADOS){
+                        int size_line_map = 0;
+                        int line = 1;
+                        switch (rcv_msg.type){
+                        // RAIO PRECISA ACONTECER ANTES DE VISUALIZACAO SEMPRE
+                        case RAIO:
+                            size_line_map = rcv_msg.data[0] * 2 + 1;
 
-                        }
-                        // Fim do pacote
-                        else if (rcv_msg.type == FIM_DA_TRANSMISSAO){
+                            break;
+                        case VISUALIZACAO:
+                            if (size_line_map != 0){
+                                for(int i = 1; i < size_line_map; i++){
+                                    mvwprintw(game_window, line, i, "%c", rcv_msg.data[i-1]);
+                                }
+                                line++;
+                            }
+                            break;
+                        // downaload (ignorado por enquanto)
+                        case DADOS:
+
+                            break;
+                        case FIM_DA_TRANSMISSAO:
+                            flag_ntw = 1;
                             break;
                         }
+                        if (flag_ntw) break;
                     }
+                    // Mensagem repetida
                     else{
                         create_control_msg(&send_msg, ACK, rcv_msg.sequence);
                         int send_bytes = serialize_msg(&send_msg, send_buffer+14);
-                        send(socket, send_buffer, send_bytes+14, 0);
+                        send(socket, send_buffer, send_bytes, 0);
                     }
                 }
-                // crc invalido envia NACK
+                // Mensagem invalida (CRC errado -- NACK)
                 else{
                     create_control_msg(&send_msg, NACK, expected_seq);
                     int send_bytes = serialize_msg(&send_msg, send_buffer+14);
                     send(socket, send_buffer, send_bytes+14, 0);
                 }
             }
-            
-            
-            if (deserialize_msg(rcv_buffer+14, &rcv_msg)){
-                uint8_t size, sequence, type;
-            }
         }
 
-        // Monta a struct e verifica o tipo
-        // Desenha ou download
-        
-        // input
-
-        // 
-
-
-        int key = getch();
-        
+        // ========================
+        // Etapa de input
+        int key = getch();                                                          // getch bloqueia fluxo
+        int direction;
+        // Etapa de captar input
         switch(key){
         case 'W':
         case 'w':
         case KEY_UP:
+            direction = CIMA;
             break;
         
         case 'D':
         case 'd':
         case KEY_RIGHT:
+            direction = DIREITA;
             break;
 
         case 'S':
         case 's':
         case KEY_DOWN:
+            direction = BAIXO;
             break;
         
         case 'A':
         case 'a':
         case KEY_LEFT:
+            direction = ESQUERDA;
             break;
         
         // Pause
+        // (VOU CRIAR UMA INTERFACE MAIS BONITINHA AINDA)
         case 'Q':
         case 'q':
             flag = 1;
             break;
         }
 
+        // Fim do jogo
+        // SERA CRIADO MAIS UM TIPO
         if (flag) break;
 
-        // cria mensagem
-
-
-        // send (loop de envio)
-        // espera NACK E ACK
+        // ========================
+        // Etapa de envio (send + ack/nack/timeout)
+        // TIMEOUT VAI SER IGNORADO POR AGORA
+        create_control_msg(&send_msg, direction, curr_seq);
+        int send_byes = serialize_msg(&send_msg, send_buffer);
+        send(socket, send_buffer, send_buffer, 0);
+        // while(1){
+        //     recv(socket, rcv_buffer, sizeof(rcv_buffer), 0);
+        // }
     }
     
     endwin();

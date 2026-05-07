@@ -163,7 +163,8 @@ static void create_msg(kermit_t *msg, uint8_t size, uint8_t type, uint8_t seq, u
     msg->size = size;
     msg->sequence = seq;
     msg->type = type;
-    msg->data = data;
+    msg->data = (uint8_t *) malloc(sizeof(size));
+    // msg->data = data;
 
     // msg->starter_marker = 0x7e;
     // msg->size_sequence_type = size & 0x1f;

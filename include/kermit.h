@@ -18,7 +18,7 @@ typedef enum kermit_types_t {
     TXT,
     JPG,
     MP4,
-    NULL0,
+    RAIO,
     NULL1,
     DIREITA,
     ESQUERDA,
