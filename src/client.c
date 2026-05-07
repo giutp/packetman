@@ -9,6 +9,7 @@
 
 #define MIN_W 80
 #define MIN_H 24
+#define TAM_BUFFER 36
 
 int main(int argc, char **argv){
     // Inicalizações da rede
@@ -17,14 +18,13 @@ int main(int argc, char **argv){
         return -1;
     }
 
+    // Criacao do soquete
     int socket = create_raw_socket(argv[1]);
 
-    unsigned char send_buffer[50];
-    unsigned char rcv_buffer[50];
-    send_buffer[12] = 0x88;
-    send_buffer[13] = 0x88;
-    kermit_t send_msg, rcv_msg;
-    uint8_t curr_seq = 0, expected_seq = 0;
+    uint8_t send_buffer[TAM_BUFFER];                                                // buffer de envia mensagem
+    uint8_t rcv_buffer[TAM_BUFFER];                                                 // buffer de receber mensagem
+    kermit_t send_msg, rcv_msg;                                                     // struct de mensagens
+    uint8_t curr_seq = 0, expected_seq = 0;                                         // sequencia de mensagens
 
 
     // Inializações do ncurses
@@ -34,7 +34,8 @@ int main(int argc, char **argv){
     // 80x24 = 80 colunas e 24 linhas
     // ncurses ao contrario (igual matriz em C [linhas][colunas] = [y][x])
     int console_width, console_heght;
-    getmaxyx(stdscr, console_heght, console_width);
+    getmaxyx(stdscr, console_heght, console_width);                                 // tamanho da janela aberta (terminal)
+    // tamanho minimo para o jogo inicializar
     if (console_heght < MIN_H || console_width < MIN_W){
         endwin();
         
@@ -75,11 +76,11 @@ int main(int argc, char **argv){
             // recebe mensagem do servidor
             recv(socket, rcv_buffer, sizeof(rcv_buffer), 0);
             
-            // mensagem chegou eh do servidor? (se nao for, eh outra mensagem que pode ser ignorada)
-            if (is_valid_start_marker(rcv_buffer+14)){
-                // mensagem chegou tem o crc valido?
-                if(is_valid_crc(rcv_buffer+14)){
-                    deserialize_msg(rcv_buffer+14, &rcv_msg);
+            // Mensagem do servidor (marcador de inicio)
+            if (is_valid_start_marker(rcv_buffer)){
+                // Mensagem valida (CRC certo)
+                if(is_valid_crc(rcv_buffer)){
+                    deserialize_msg(rcv_buffer+14, &rcv_msg);                       //
                     if (rcv_msg.sequence == expected_seq){
                         create_control_msg(&send_msg, ACK, rcv_msg.sequence);
                         int send_bytes = serialize_msg(&send_msg, send_buffer+14);
