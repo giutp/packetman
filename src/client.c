@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <ncurses.h>
 #include <sys/socket.h>
+#include <string.h>
 
 #include "kermit.h"
 #include "interface.h"
@@ -87,6 +88,10 @@ int main(int argc, char **argv){
                 // Mensagem valida (CRC certo -- ACK)
                 if(is_valid_crc(rcv_buffer)){
                     deserialize_msg(rcv_buffer, &rcv_msg);                       // Monta a struct
+                    char *ext;
+                    char *name_arc;
+                    char *size_arc;
+                    char *del;
                     // Mensagem recebida eh a esperada
                     if (rcv_msg.sequence == expected_seq){                       
                         create_control_msg(&send_msg, ACK, rcv_msg.sequence);   // Cria mensagem (coloca valores na struct)
@@ -113,7 +118,20 @@ int main(int argc, char **argv){
                             break;
                         // downaload (ignorado por enquanto)
                         case DADOS:
-
+                            
+                            break;
+                        case TXT:
+                            del = strchr((char *)rcv_msg.data, '-');
+                            ext = ".txt";
+                            strtok(rcv_msg.data, "-");
+                            break;
+                        case JPG:
+                            ext = ".jpg";
+                            strtok(rcv_msg.data, "-");
+                            break;
+                        case MP4:
+                            ext = ".mp4";
+                            strtok(rcv_msg.data, "-");
                             break;
                         case FIM_DA_TRANSMISSAO:
                             flag_ntw = 1;
@@ -183,11 +201,28 @@ int main(int argc, char **argv){
         // Etapa de envio (send + ack/nack/timeout)
         // TIMEOUT VAI SER IGNORADO POR AGORA
         create_control_msg(&send_msg, direction, curr_seq);
-        int send_byes = serialize_msg(&send_msg, send_buffer);
-        send(socket, send_buffer, send_buffer, 0);
-        // while(1){
-        //     recv(socket, rcv_buffer, sizeof(rcv_buffer), 0);
-        // }
+        int send_bytes = serialize_msg(&send_msg, send_buffer);
+        send(socket, send_buffer, send_bytes, 0);
+        int flag_rcv = 0;
+        while(1){
+            recv(socket, rcv_buffer, sizeof(rcv_buffer), 0);
+            if (is_valid_start_marker(rcv_buffer) && is_valid_crc(rcv_buffer)){
+                deserialize_msg(rcv_buffer, &rcv_msg);
+                switch (rcv_msg.type){
+                case ACK:
+                    flag_rcv = 1;
+                    curr_seq = expected_seq;
+                    expected_seq = (curr_seq + 1) % 32;
+                    break;
+                
+                case NACK:
+                    send(socket, send_bytes, send_bytes, 0);
+                    break;
+                }
+                if (flag_rcv) break;
+            }
+        }
+
     }
     
     endwin();
