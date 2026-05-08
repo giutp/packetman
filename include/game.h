@@ -6,6 +6,9 @@
 #include "ghosts.h"
 #include "pellets.h"
 
+// Quantidade de entidades
+#define NUM_ENT 11
+
 // Ler um arquivo .csv e monta o mapa do jogo
 // Retorna:
 // + -1: falha em abrir o arquivo (mapa)

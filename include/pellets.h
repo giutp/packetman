@@ -3,6 +3,9 @@
 
 #include "utils.h"
 
+// Quantidade de pastilhas
+#define NUM_PELLETS 6
+
 // Tipo do arquivo enviado entre servidor-cliente pelas pastilhas
 typedef enum {
     FILE_TXT,

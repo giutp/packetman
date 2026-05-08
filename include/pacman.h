@@ -3,7 +3,7 @@
 
 #include "utils.h"
 
-// Tamanho máximo do raio
+// Tamanho máximo do raio (MUDAR DEPOIS TALVEZ)
 #define MAX_RADIUS 10
 
 // Atributos do Pacman

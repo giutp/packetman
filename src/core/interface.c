@@ -2,8 +2,11 @@
 
 void init_interface(){
     initscr();
+
     cbreak();
     noecho();
+    keypad(stdscr, TRUE);
+
     curs_set(0);
-    nodelay(stdscr, TRUE);
+    // nodelay(stdscr, TRUE);
 }

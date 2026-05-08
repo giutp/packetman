@@ -8,6 +8,8 @@
 char symbols[11] = {'P', 'R', 'B', 'G', 'Y', '1', '2', '3', '4', '5', '6'};
 
 // Sorteia uma coordenada dentro dos limites do mapa (NxN)
+// Retorna:
+// + Coordenada válida [0..N-1]
 static coord_t rand_coord(){
     coord_t coord;
     coord.x = rand()%N;
@@ -43,7 +45,7 @@ static int is_inside_camera(coord_t e, coord_t st_c, coord_t en_c){
 // Calcula o índice relativo da entidade dentro do buffer da submatriz
 // Retorna:
 // + índice no vetor
-static index_relative(coord_t e, coord_t st_c, int size_grid){
+static int index_relative(coord_t e, coord_t st_c, int size_grid){
     return (e.y - st_c.y) * size_grid + (e.x - st_c.x);
 }
 
@@ -77,7 +79,7 @@ int randomizer_entities(char map[N][N]){
     
     int i = 0;
     coord_t coord;
-    while(i < 11){
+    while(i < NUM_ENT){
         coord = rand_coord();
         if (map[coord.y][coord.x] == '0'){
             map[coord.y][coord.x] = symbols[i];
@@ -145,13 +147,8 @@ void init_entities(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *
     }
 }
 
-/*
-    Essas funções não foram testadas ainda
-    A ordem de ações é atualizar fantasmas -> atualizar pacman
-*/
-
 int check_ghost_pacman_collision(pacman_t *pacman, ghost_t *ghosts){
-    for(int i = 0; i < 4; i++)
+    for(int i = 0; i < NUM_GHOSTS; i++)
         if((pacman->position.x == ghosts[i].position.x) && (pacman->position.y == ghosts[i].position.y))
             return 1;
 
@@ -159,7 +156,7 @@ int check_ghost_pacman_collision(pacman_t *pacman, ghost_t *ghosts){
 }
 
 int check_pellets_pacman_collision(pacman_t *pacman, pellet_t *pellets){
-    for(int i = 0; i < 6; i++)
+    for(int i = 0; i < NUM_PELLETS; i++)
         if((!pellets[i].collected) && (pacman->position.x == pellets[i].position.x) && (pacman->position.y == pellets[i].position.y))
             return i+1;
 
@@ -168,7 +165,6 @@ int check_pellets_pacman_collision(pacman_t *pacman, pellet_t *pellets){
 
 void build_submatrix(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, uint8_t *buffer){
     // Posições relativas à visão do Pacman
-    coord_t center = pacman->position;
     int square_size = (pacman->radius * 2) + 1;
 
     coord_t coord_start, coord_end;
@@ -188,7 +184,7 @@ void build_submatrix(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t
     }
 
     // Inclui as pastilhas dentro da submatriz
-    for (int i = 0; i < 6; i++){
+    for (int i = 0; i < NUM_PELLETS; i++){
         if (!pellets[i].collected && is_inside_camera(pellets[i].position, coord_start, coord_end)){
             i_buffer = index_relative(pellets[i].position, coord_start, square_size);
             buffer[i_buffer] = '0' + i;
@@ -196,7 +192,7 @@ void build_submatrix(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t
     }
 
     // Inclui os fantasmas dentro da submatriz
-    for (int i = 0; i < 4; i++){
+    for (int i = 0; i < NUM_GHOSTS; i++){
         if (is_inside_camera(ghosts[i].position, coord_start, coord_end)){
             i_buffer = index_relative(ghosts[i].position, coord_start, square_size);
             switch (ghosts[i].color){
@@ -219,7 +215,7 @@ void build_submatrix(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t
         }
     }
 
-    // Incluir o Pacman na submatriz (centro)
+    // Inclui o Pacman na submatriz (centro)
     i_buffer = pacman->radius * square_size + pacman->radius;
     buffer[i_buffer] = 'P';
 }
