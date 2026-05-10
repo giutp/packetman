@@ -45,28 +45,16 @@ int create_raw_socket(char *network_interface_name){
     return sk;
 }
 
-int is_valid_start_marker(uint8_t *buffer){
+int is_valid_protocol(uint8_t *buffer){
     return (buffer[0] == START_MARKER);
 }
 
 int is_valid_crc(uint8_t *buffer){
-
-    // uint16_t size_sequence_type;
-    // size_sequence_type = buffer[1];
-    // size_sequence_type <<= 8;
-    // size_sequence_type = buffer[2];
-
-    // uint8_t size = (size_sequence_type >> 11) & 0x1f;
-    uint8_t size = buffer[1];
     uint8_t crc_buffer, crc_check;
-    crc_buffer = buffer[3+size];
-    crc_check = calculate_crc8(buffer, 3+size);
-    return(crc_buffer == crc_buffer);
 
-    // uint8_t crc_buffer, crc_check;
-    // crc_buffer = buffer[size+3];
-    // crc_check = calculate_crc8(buffer, 3 + size);
-    // return (crc_buffer == crc_check);
+    crc_buffer = buffer[4+buffer[1]];
+    crc_check = calculate_crc8(buffer, 4+buffer[1]);
+    return(crc_buffer == crc_buffer);
 }
 
 uint8_t calculate_crc8(uint8_t *buffer, int size_buffer){
@@ -86,75 +74,32 @@ uint8_t calculate_crc8(uint8_t *buffer, int size_buffer){
 }
 
 int serialize_msg(kermit_t *send_msg, uint8_t *send_buffer){
-    // if (!send_msg || !send_buffer) return -1;
-
     send_buffer[0] = send_msg->starter_marker;
     send_buffer[1] = send_msg->size;
     send_buffer[2] = send_msg->sequence;
     send_buffer[3] = send_msg->type;
     for (int i = 0; i < send_msg->size; i++){
-        send_buffer[i + 3] = send_msg->data[i];
+        send_buffer[i + 4] = send_msg->data[i];
     }
-    send_buffer[3 + send_msg->size] = calculate_crc8(send_buffer, 3 + send_msg->size);
+    send_buffer[4 + send_msg->size] = calculate_crc8(send_buffer, 4 + send_msg->size);
 
-    return (3 + send_msg->size + 1);
-
-    // uint8_t size;
-    // size = (deserialize_msg->size_sequence_type >> 11) & 0x1f;
-    // if (size > 0 && !deserialize_msg->data) return -1;
-
-    // serialize_msg[0] = deserialize_msg->starter_marker;
-    // serialize_msg[1] = deserialize_msg->size_sequence_type >> 8;
-    // serialize_msg[2] = deserialize_msg->size_sequence_type;
-
-    // for (int i = 0; i < size; i++){
-    //     serialize_msg[i+3] = deserialize_msg->data[i];
-    // }
-
-    // serialize_msg[size + 3] = calculate_crc8(serialize_msg, size + 3);
-
-    // // TODO: mudar para constantes esses valores talvez? Apenas por legibilidade
-    // return (3 + size + 1);
+    return (4 + send_msg->size + 1);
 }
 
-//Funcao vai mudar
 int deserialize_msg(uint8_t *rcv_buffer, kermit_t *rcv_msg){
-    // if (!rcv_buffer || !rcv_msg) return -1;
 
     rcv_msg->starter_marker = rcv_buffer[0];
     rcv_msg->size = rcv_buffer[1];
     rcv_msg->sequence = rcv_buffer[2];
     rcv_msg->type = rcv_buffer[3];
-    for(int i = 0; i < rcv_buffer[1]; i++){
-        rcv_msg->data[i] = rcv_buffer[i + 3];
+    rcv_msg->data = NULL;
+    if (rcv_buffer[1] > 0){
+        rcv_msg->data = (uint8_t *)malloc(rcv_buffer[1]); 
+        memcpy(rcv_msg->data, rcv_buffer+4, rcv_buffer[1]);
     }
-    rcv_msg->crc = rcv_buffer[3 + rcv_buffer[1]];
+    rcv_msg->crc = rcv_buffer[4 + rcv_buffer[1]];
 
-    return (3 + rcv_buffer[1] + 1);
-    
-    // Inserir constante tvlz?
-    // 0x7e: marcador de inicio
-    // Provavelmente vai sair daqui pois esta fora do escopo da funcao
-    // if (serialize_msg[0] != 0x7e) return -2;
-
-    // deserialize_msg->starter_marker = serialize_msg[0];
-    // deserialize_msg->size_sequence_type = serialize_msg[1];
-    // deserialize_msg->size_sequence_type <<= 8;
-    // deserialize_msg->size_sequence_type |= serialize_msg[2];
-    
-    // uint8_t size = (deserialize_msg->size_sequence_type >> 11) & 0x1f;
-
-    // Essas checagens talvez saiam daqui devido escopo da funcao
-    // ser apenas deserializar mensagem
-    // deserialize_msg->crc = serialize_msg[3 + size];
-    // if (calculate_crc8(serialize_msg, 3 + size) != deserialize_msg->crc) return -4;
-    
-    // if (size > 0 && !deserialize_msg->data) return -3;
-    // for (int i = 0; i < size; i++){
-    //     deserialize_msg->data[i] = serialize_msg[i + 3];
-    // }
-
-    // return (3 + size + 1);
+    return (4 + rcv_buffer[1] + 1);
 }
 
 // Cria mensagem usando o procolo kermit
@@ -163,16 +108,7 @@ static void create_msg(kermit_t *msg, uint8_t size, uint8_t type, uint8_t seq, u
     msg->size = size;
     msg->sequence = seq;
     msg->type = type;
-    msg->data = (uint8_t *) malloc(sizeof(size));
-    // msg->data = data;
-
-    // msg->starter_marker = 0x7e;
-    // msg->size_sequence_type = size & 0x1f;
-    // msg->size_sequence_type <<= 5;
-    // msg->size_sequence_type |= seq & 0x3f;
-    // msg->size_sequence_type <<= 5;
-    // msg->size_sequence_type |= type & 0x1f;
-    // msg->data = data;
+    msg->data = data;
 }
 
 void create_control_msg(kermit_t *msg, uint8_t type, uint8_t seq){

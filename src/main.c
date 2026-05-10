@@ -46,16 +46,20 @@ int main(){
 
     // }
 
-    init_interface();
-    char c = '#';
+    // init_interface();
+    // char c = '#';
 
-    for (int line = 0; line < 10; line++)
-        for (int col = 0; col < 20; col += 2){
-            mvwprintw(stdscr, line, col, "%c ", c);
-        }
-    refresh();
-    int k = getch();
-    endwin();
+    // for (int line = 0; line < 10; line++)
+    //     for (int col = 0; col < 20; col += 2){
+    //         mvwprintw(stdscr, line, col, "%c ", c);
+    //     }
+    // refresh();
+    // int k = getch();
+    // endwin();
+
+    char *ext;
+    ext = ".txt";
+    printf("%s\n", ext);
 
     return 0;
 }
