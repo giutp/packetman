@@ -54,7 +54,7 @@ int is_valid_crc(uint8_t *buffer){
 
     crc_buffer = buffer[4+buffer[1]];
     crc_check = calculate_crc8(buffer, 4+buffer[1]);
-    return(crc_buffer == crc_buffer);
+    return(crc_buffer == crc_check);
 }
 
 uint8_t calculate_crc8(uint8_t *buffer, int size_buffer){
@@ -126,13 +126,13 @@ long long timestamp(){
     return tp.tv_sec*1000 + tp.tv_usec/1000;
 }
 
-int protocolo_e_valido(char *buffer, int tamanho_buffer){
+int protocolo_e_valido(uint8_t *buffer, int tamanho_buffer){
     if (tamanho_buffer <= 0) return 0;
 
     return buffer[0] == 0x7e;
 }
 
-int recebe_mensagem(int soquete, int timeoutMillis, char *buffer, int tamanho_buffer){
+int recebe_mensagem(int soquete, int timeoutMillis, uint8_t *buffer, int tamanho_buffer){
     long long comeco = timestamp();
     struct timeval timeout = {
         .tv_sec = timeoutMillis/1000,

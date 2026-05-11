@@ -18,6 +18,9 @@ typedef struct coord {
     int y;
 } coord_t;
 
-
+// Converte o valor do enum para a string correspondente
+// Retorna:
+// + String correspondente ao type
+char *enum_to_string(types_t type);
 
 #endif
