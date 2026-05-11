@@ -36,10 +36,9 @@ typedef enum kermit_types_t {
 // Estrutura do protocolo kermit (modificado)
 typedef struct protocol_kermit_t {
     uint8_t starter_marker;             // 8 bits
-    // uint16_t size_sequence_type;        // 5 + 6 + 5 = 16 bits
-    uint8_t size: 5;
-    uint8_t sequence: 6;
-    uint8_t type: 5;
+    uint8_t size: 5;                    // 5 bits
+    uint8_t sequence: 6;                // 6 bits
+    uint8_t type: 5;                    // 5 bits
     uint8_t *data;                      // n bytes
     uint8_t crc;                        // 8 bits
 } __attribute__((packed)) kermit_t;
@@ -64,7 +63,7 @@ int serialize_msg(kermit_t *send_msg, uint8_t *send_buffer);
 
 // Deserializa a mensagem
 // Retorna:
-// TODO: a definir os codigos de erros
+// + Tamanho do pacote deserializado 
 int deserialize_msg(uint8_t *rcv_buffer, kermit_t *rcv_msg);
 
 // Função wrapper: cria mensagem sem dados chamando create_msg()
@@ -73,8 +72,16 @@ void create_control_msg(kermit_t *msg, uint8_t type, uint8_t seq);
 // Função wrapper: cria mensagem com dados chamando create_msg()
 void create_data_msg(kermit_t *msg, uint8_t size, uint8_t type, uint8_t seq, uint8_t *data);
 
-int is_valid_start_marker(uint8_t *buffer);
+// Válida o marcador de início da mensagem recebida
+// Retorna:
+// + "True": se o começo da mensagem for igual a START_MARKER
+// + "False": caso contrário
+int is_valid_protocol(uint8_t *buffer);
 
+// Válida o CRC da mensagem recebida
+// Retorna:
+// + "True": se o campo CRC da mensagem for igual ao CRC calculado
+// + "False": caso contrário
 int is_valid_crc(uint8_t *buffer);
 
 long long timestamp();
