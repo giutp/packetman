@@ -11,22 +11,24 @@
 */
 // Tipo de mensagem do protocolo kermit
 typedef enum kermit_types_t {
-    ACK,
-    NACK,
-    VISUALIZACAO,
-    DADOS,
-    TXT,
-    JPG,
-    MP4,
-    RAIO,
-    NULL1,
-    DIREITA,
-    ESQUERDA,
-    CIMA,
-    BAIXO,
-    NULL2,
-    ERROS,
-    FIM_DA_TRANSMISSAO
+    ACK,                                // mensagem recebida
+    NACK,                               // mensagem recebida com erro
+    VISUALIZACAO,                       // mapa do jogo
+    DADOS,                              // arquivos de download
+    TXT,                                // arquivo .txt
+    JPG,                                // arquivo .jpg
+    MP4,                                // arquivo .mp4
+    RAIO,                               // raio de visao do pacman
+    SAIR,                               // parar o jogo
+    DIREITA,                            // movimento para direita
+    ESQUERDA,                           // movimento para esquerda
+    CIMA,                               // movimento para cima
+    BAIXO,                              // movimento para baixo
+    NULL2,                              // a definir
+    ERROS,                              // erros do cliente (permissao/espaco)
+    FIM_DA_TRANSMISSAO,                 // fim de mensagem do mapa
+    VITORIA,                            // jogador venceu
+    DERROTA                             // jogador perdeu
     /* 
         TODO: Preenchido 12 dos 32 tipos
         * Definir os outros 20 tipos
@@ -86,8 +88,8 @@ int is_valid_crc(uint8_t *buffer);
 
 long long timestamp();
 
-int protocolo_e_valido(char *buffer, int tamanho_buffer);
+int protocolo_e_valido(uint8_t *buffer, int tamanho_buffer);
 
-int recebe_mensagem(int soquete, int timeoutMillis, char *buffer, int tamanho_buffer);
+int recebe_mensagem(int soquete, int timeoutMillis, uint8_t *buffer, int tamanho_buffer);
 
 #endif

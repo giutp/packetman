@@ -5,7 +5,7 @@ BIN_DIR     := bin
 
 # Flags
 CC          := gcc
-CFLAGS      := -Wall -Wextra -Wpedantic -g -I$(INC_DIR)
+CFLAGS      := -Wall -Wextra -Wpedantic -Wno-packed-bitfield-compat -g -I$(INC_DIR)
 LDFLAGS     := -lncurses
 
 # Alvos finais (executáveis)
