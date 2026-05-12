@@ -6,6 +6,7 @@
 #include "game.h"
 
 #define TAM_BUFFER 36
+#define MAX_DATA 32
 
 int main(int argc, char **argv){
     if (argc < 2){
@@ -93,81 +94,134 @@ int main(int argc, char **argv){
 
         FILE *pellet_file;
         switch (game_response)
-            {
-                // no caso de derrota
-                case -1:
-                    /* code */
-                    break;
-                // no caso de coleta das pastilhas
-                case 1:
-                    pellet_file = fopen("../assets/files/1.txt", "r");
-                    break;
-                case 2:
-                    pellet_file = fopen("../assets/files/2.txt", "r");
-                    break;
-                case 3:
-                    pellet_file = fopen("../assets/files/3.jpg", "r");
-                    break;
-                case 4:
-                    pellet_file = fopen("../assets/files/4.jpg", "r");
-                    break;
-                case 5:
-                    pellet_file = fopen("../assets/files/5.mp4", "r");
-                    break;
-                case 6:
-                    pellet_file = fopen("../assets/files/6.mp4", "r");
-                    break;
-                // no caso de vitória
-                case 10:
-                    break;
-                default:
-                    break;
-            }
+        {
+            case 1:
+                pellet_file = fopen("../assets/files/1.txt", "r");
+                break;
+            case 2:
+                pellet_file = fopen("../assets/files/2.txt", "r");
+                break;
+            case 3:
+                pellet_file = fopen("../assets/files/3.jpg", "r");
+                break;
+            case 4:
+                pellet_file = fopen("../assets/files/4.jpg", "r");
+                break;
+            case 5:
+                pellet_file = fopen("../assets/files/5.mp4", "r");
+                break;
+            case 6:
+                pellet_file = fopen("../assets/files/6.mp4", "r");
+                break;
+            default:
+                break;
+        }
 
         if(game_response >= 1 && game_response <= 6){
             // Envio do identificador da pastilha
             create_control_msg(&send_msg, direction, curr_seq);
             int send_bytes = serialize_msg(&send_msg, send_buffer);
-            send(socket, send_buffer, send_buffer, 0);
+            send(socket, send_buffer, send_bytes, 0);
+
+            uint8_t file_buffer[MAX_DATA];
+            size_t bytes_read;
 
             // envio dos dados parciais
-            while (fr)
-            {
-                // TODO: parsing dos dados dos archivos para enviar como mensagens
+            while ((bytes_read = fread(file_buffer, 1, MAX_DATA, pellet_file)) > 0) {
+                create_data_msg( &send_msg, DADOS, curr_seq, file_buffer, bytes_read);
+                int send_bytes = serialize_msg(&send_msg, send_buffer);
+                send(socket, send_buffer, send_bytes, 0);
+
+                int flag_rcv = 0;    
+                while(1){
+                    // Timeout (de 1s -- por enquanto) + CRC
+                    if ((recebe_mensagem(socket, 1000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer))){
+                        deserialize_msg(rcv_buffer, &rcv_msg);
+                        if (rcv_msg.sequence == curr_seq && rcv_msg.type == ACK){
+                            curr_seq = (curr_seq + 1) % 32;
+                            flag_rcv = 1;
+                        }
+                    free(rcv_msg.data);
+                    }
+
+                    if (flag_rcv) break;
+                    else send(socket, send_buffer, send_bytes, 0);
+                }
             }
         }
 
         // envio do mapa
+
+        // Envio do identificado de visualização
+        create_control_msg(&send_msg, VISUALIZACAO, curr_seq);
+        int send_bytes = serialize_msg(&send_msg, send_buffer);
+        send(socket, send_buffer, send_bytes, 0);
+
+        // vê se a resposta foi positiva ou negativa (e tenta até ser positiva)
+        int flag_rcv = 0;
         while(1){
-
-            // Envio do identificado de visualização
-            create_control_msg(&send_msg, VISUALIZACAO, curr_seq);
-            int send_bytes = serialize_msg(&send_msg, send_buffer);
-            send(socket, send_buffer, send_buffer, 0);
-
-            // vê se a resposta foi positiva ou negativa (e tenta até ser positiva)
-            int flag_rcv = 0;                                                           // Loop de recebimento de ack/nack
-            while(1){
-                // Timeout (de 1s -- por enquanto) + CRC
-                if ((recebe_mensagem(socket, 1000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer))){
-                    deserialize_msg(rcv_buffer, &rcv_msg);
-                    if (rcv_msg.sequence == curr_seq && rcv_msg.type == ACK){
-                        curr_seq = (curr_seq + 1) % 32;
-                        flag_rcv = 1;
-                    }
-                    free(rcv_msg.data);
+            // Timeout (de 1s -- por enquanto) + CRC
+            if ((recebe_mensagem(socket, 1000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer))){
+                deserialize_msg(rcv_buffer, &rcv_msg);
+                if (rcv_msg.sequence == curr_seq && rcv_msg.type == ACK){
+                    curr_seq = (curr_seq + 1) % 32;
+                    flag_rcv = 1;
                 }
-
-                if (flag_rcv) break;
-                else send(socket, send_buffer, send_bytes, 0);
+                free(rcv_msg.data);
             }
 
-            uint8_t submatrix_buffer = malloc(pow(2*pacman.radius+1, 2)*sizeof(uint8_t));
-            build_submatrix(map, &pacman, ghosts, pellets, send_buffer);
-
-            // TODO: parsing da submatriz para enviar como mensagens          
+            if (flag_rcv) break;
+            else send(socket, send_buffer, send_bytes, 0);
         }
 
+        // Envio do raio
+        create_control_msg(&send_msg, RAIO, curr_seq);
+        int send_bytes = serialize_msg(&send_msg, send_buffer);
+        send(socket, send_buffer, send_buffer, 0);
+
+        // vê se a resposta foi positiva ou negativa (e tenta até ser positiva)
+        int flag_rcv = 0;
+        while(1){
+            // Timeout (de 1s -- por enquanto) + CRC
+            if ((recebe_mensagem(socket, 1000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer))){
+                deserialize_msg(rcv_buffer, &rcv_msg);
+                if (rcv_msg.sequence == curr_seq && rcv_msg.type == ACK){
+                    curr_seq = (curr_seq + 1) % 32;
+                    flag_rcv = 1;
+                }
+                free(rcv_msg.data);
+            }
+
+            if (flag_rcv) break;
+            else send(socket, send_buffer, send_bytes, 0);
+        }
+
+        uint8_t submatrix_buffer = malloc(pow(2*pacman.radius+1, 2)*sizeof(uint8_t));
+        build_submatrix(map, &pacman, ghosts, pellets, send_buffer);
+
+        // TODO: parsing da submatriz para enviar como mensagens          
+
+
+        create_control_msg(&send_msg, FIM_DA_TRANSMISSAO, curr_seq);
+        int send_bytes = serialize_msg(&send_msg, send_buffer);
+        send(socket, send_buffer, send_buffer, 0);
+
+        // vê se a resposta foi positiva ou negativa (e tenta até ser positiva)
+        int flag_rcv = 0;
+        while(1){
+            // Timeout (de 1s -- por enquanto) + CRC
+            if ((recebe_mensagem(socket, 1000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer))){
+                deserialize_msg(rcv_buffer, &rcv_msg);
+                if (rcv_msg.sequence == curr_seq && rcv_msg.type == ACK){
+                    curr_seq = (curr_seq + 1) % 32;
+                    flag_rcv = 1;
+                }
+                free(rcv_msg.data);
+            }
+
+            if (flag_rcv) break;
+            else send(socket, send_buffer, send_bytes, 0);
+        }
     }
 
     return 0;
