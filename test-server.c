@@ -16,7 +16,9 @@ int main(int argc, char **argv){
     uint8_t send_buffer[TAM_BUFFER];                                                // buffer de envia mensagem
     uint8_t rcv_buffer[TAM_BUFFER];                                                 // buffer de receber mensagem
 
-    create_control_msg(&send_msg, FIM_DA_TRANSMISSAO, curr_seq);
+    create_control_msg(&send_msg, VISUALIZACAO, curr_seq);
     int send_bytes = serialize_msg(&send_msg, send_buffer);
     send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+
+    return 0;
 }

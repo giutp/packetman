@@ -10,9 +10,10 @@
 #include "utils.h"
 
 int main(int argc, char **argv){
+    if (argc < 2) return -1;
     int socket = create_raw_socket(argv[1]);
     kermit_t rcv_msg, send_msg;                                                     // struct de mensagens
-    int curr_seq = 0, expected_seq = 0;                                             // sequencia de mensagens
+    int expected_seq = 0;                                             // sequencia de mensagens
     uint8_t send_buffer[TAM_BUFFER];                                                // buffer de envia mensagem
     uint8_t rcv_buffer[TAM_BUFFER];                                                 // buffer de receber mensagem
 
@@ -31,8 +32,10 @@ int main(int argc, char **argv){
                     int send_bytes = serialize_msg(&send_msg, send_buffer); 
                     send(socket, send_buffer, send_bytes, 0);               
                     expected_seq = (expected_seq + 1) % 32;
-                    if(rcv_msg.type == VISUALIZACAO)
+                    if(rcv_msg.type == VISUALIZACAO){
                         printf("SUCESSO");
+                        flag_ntw = 1;
+                    }
                 }
                 // Mensagem repetida
                 else{
@@ -49,5 +52,8 @@ int main(int argc, char **argv){
                 send(socket, send_buffer, send_bytes, 0);
             }
         }
+        if (flag_ntw) break;
     }
+
+    return 0;
 }

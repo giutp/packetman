@@ -1,7 +1,7 @@
 # Diretórios
 SRC_DIR     := src
 INC_DIR     := include
-BIN_DIR     := bin
+# BIN_DIR     := bin
 
 # Flags
 CC          := gcc
@@ -9,18 +9,18 @@ CFLAGS      := -Wall -Wextra -Wpedantic -Wno-packed-bitfield-compat -g -I$(INC_D
 LDFLAGS     := -lncurses
 
 # Alvos finais (executáveis)
-TARGET_CLIENT := $(BIN_DIR)/client
-TARGET_SERVER := $(BIN_DIR)/server
+TARGET_CLIENT := client
+TARGET_SERVER := server
 
 # Arquivos compartilhados (rede)
 COMMON_SRC  := $(SRC_DIR)/network/kermit.c
 
 # Arquivos do Cliente (interface + rede)
-CLIENT_SRC  := $(SRC_DIR)/client.c $(SRC_DIR)/core/interface.c \
+CLIENT_SRC  := test-client.c $(SRC_DIR)/core/interface.c \
                $(COMMON_SRC)
 
 # Arquivos do Servidor (lógica do Jogo + rede)
-SERVER_SRC  := $(SRC_DIR)/server.c $(SRC_DIR)/core/game.c \
+SERVER_SRC  := test-server.c $(SRC_DIR)/core/game.c \
                $(SRC_DIR)/core/ghosts.c $(SRC_DIR)/core/pacman.c \
                $(SRC_DIR)/core/pellets.c \
                $(COMMON_SRC)
