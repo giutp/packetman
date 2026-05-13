@@ -130,23 +130,7 @@ int main(int argc, char **argv){
             while ((bytes_read = fread(file_buffer, 1, MAX_DATA, pellet_file)) > 0) {
                 create_data_msg( &send_msg, DADOS, curr_seq, file_buffer, bytes_read);
                 int send_bytes = serialize_msg(&send_msg, send_buffer);
-                send(socket, send_buffer, send_bytes, 0);
-
-                int flag_rcv = 0;    
-                while(1){
-                    // Timeout (de 1s -- por enquanto) + CRC
-                    if ((recebe_mensagem(socket, 1000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer))){
-                        deserialize_msg(rcv_buffer, &rcv_msg);
-                        if (rcv_msg.sequence == curr_seq && rcv_msg.type == ACK){
-                            curr_seq = (curr_seq + 1) % 32;
-                            flag_rcv = 1;
-                        }
-                    free(rcv_msg.data);
-                    }
-
-                    if (flag_rcv) break;
-                    else send(socket, send_buffer, send_bytes, 0);
-                }
+                send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
             }
         }
 
@@ -155,73 +139,39 @@ int main(int argc, char **argv){
         // Envio do identificado de visualização
         create_control_msg(&send_msg, VISUALIZACAO, curr_seq);
         int send_bytes = serialize_msg(&send_msg, send_buffer);
-        send(socket, send_buffer, send_bytes, 0);
-
-        // vê se a resposta foi positiva ou negativa (e tenta até ser positiva)
-        int flag_rcv = 0;
-        while(1){
-            // Timeout (de 1s -- por enquanto) + CRC
-            if ((recebe_mensagem(socket, 1000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer))){
-                deserialize_msg(rcv_buffer, &rcv_msg);
-                if (rcv_msg.sequence == curr_seq && rcv_msg.type == ACK){
-                    curr_seq = (curr_seq + 1) % 32;
-                    flag_rcv = 1;
-                }
-                free(rcv_msg.data);
-            }
-
-            if (flag_rcv) break;
-            else send(socket, send_buffer, send_bytes, 0);
-        }
+        send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 
         // Envio do raio
         create_control_msg(&send_msg, RAIO, curr_seq);
         int send_bytes = serialize_msg(&send_msg, send_buffer);
-        send(socket, send_buffer, send_buffer, 0);
+        send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 
-        // vê se a resposta foi positiva ou negativa (e tenta até ser positiva)
-        int flag_rcv = 0;
-        while(1){
-            // Timeout (de 1s -- por enquanto) + CRC
-            if ((recebe_mensagem(socket, 1000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer))){
-                deserialize_msg(rcv_buffer, &rcv_msg);
-                if (rcv_msg.sequence == curr_seq && rcv_msg.type == ACK){
-                    curr_seq = (curr_seq + 1) % 32;
-                    flag_rcv = 1;
-                }
-                free(rcv_msg.data);
-            }
+        // Envio da área visível
+        int side = 2 * pacman.radius + 1;
+        int total = side * side;
 
-            if (flag_rcv) break;
-            else send(socket, send_buffer, send_bytes, 0);
+        uint8_t *submatrix_buffer = malloc(total*sizeof(uint8_t));
+        build_submatrix(map, &pacman, ghosts, pellets, submatrix_buffer);
+       
+        int offset = 0;
+
+        while (offset < total) {
+            int chunk_size = MAX_DATA;
+            if (total - offset < MAX_DATA)
+                chunk_size = total - offset;
+
+            create_data_msg(&send_msg, DADOS, curr_seq, submatrix_buffer + offset, chunk_size);
+            int send_bytes = serialize_msg(&send_msg, send_buffer);
+            send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+
+            offset += chunk_size;
         }
 
-        uint8_t submatrix_buffer = malloc(pow(2*pacman.radius+1, 2)*sizeof(uint8_t));
-        build_submatrix(map, &pacman, ghosts, pellets, send_buffer);
-
-        // TODO: parsing da submatriz para enviar como mensagens          
-
+        free(submatrix_buffer);
 
         create_control_msg(&send_msg, FIM_DA_TRANSMISSAO, curr_seq);
         int send_bytes = serialize_msg(&send_msg, send_buffer);
-        send(socket, send_buffer, send_buffer, 0);
-
-        // vê se a resposta foi positiva ou negativa (e tenta até ser positiva)
-        int flag_rcv = 0;
-        while(1){
-            // Timeout (de 1s -- por enquanto) + CRC
-            if ((recebe_mensagem(socket, 1000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer))){
-                deserialize_msg(rcv_buffer, &rcv_msg);
-                if (rcv_msg.sequence == curr_seq && rcv_msg.type == ACK){
-                    curr_seq = (curr_seq + 1) % 32;
-                    flag_rcv = 1;
-                }
-                free(rcv_msg.data);
-            }
-
-            if (flag_rcv) break;
-            else send(socket, send_buffer, send_bytes, 0);
-        }
+        send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
     }
 
     return 0;
