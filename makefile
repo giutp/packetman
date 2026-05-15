@@ -10,8 +10,10 @@ CFLAGS 			:= -Wall -Wextra -Wpedantic -Wno-packed-bitfield-compat -I$(INC_DIR)
 LDFLAGS 		:= -lncurses
 
 # arquivos fonte
-SRC_CLIENT		:= client.c interface.c
-SRC_SERVER		:= server.c game.c ghosts.c pacman.c pellets.c
+# SRC_CLIENT		:= client.c interface.c
+SRC_CLIENT		:= test-client.c interface.c
+# SRC_SERVER		:= server.c game.c ghosts.c pacman.c pellets.c
+SRC_SERVER		:= test-server.c game.c ghosts.c pacman.c pellets.c
 SRC_COMMON		:= utils.c kermit.c
 
 # arquivos objetos

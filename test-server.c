@@ -10,6 +10,7 @@
 #include "utils.h"
 
 int main(int argc, char **argv){
+    if (argc < 2) return -1;
     int socket = create_raw_socket(argv[1]);
     kermit_t rcv_msg, send_msg;                                                     // struct de mensagens
     int curr_seq = 0, expected_seq = 0;                                             // sequencia de mensagens
