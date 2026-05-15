@@ -25,4 +25,7 @@ typedef struct coord {
 // + String correspondente ao type
 char *enum_to_string(types_t type);
 
+// Envia mensagem e faz o controle de ACK e NACK
+void send_with_ack(int socket, uint8_t *send_buffer, int send_bytes, uint8_t *rcv_buffer, kermit_t *rcv_msg, int *curr_seq);
+
 #endif

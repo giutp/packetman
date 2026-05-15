@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #define START_MARKER 0x7e
+#define TAM_BUFFER 36
 
 /* TODO: 
     * melhorar os comentarios
@@ -44,7 +45,6 @@ typedef struct protocol_kermit_t {
     uint8_t *data;                      // n bytes
     uint8_t crc;                        // 8 bits
 } __attribute__((packed)) kermit_t;
-
 
 // Cria o raw scoket baseado no nome da interface
 // Retorna:

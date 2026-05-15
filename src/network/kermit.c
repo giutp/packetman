@@ -147,3 +147,20 @@ int recebe_mensagem(int soquete, int timeoutMillis, uint8_t *buffer, int tamanho
 
     return -1;
 }
+
+void send_with_ack(int socket, uint8_t *send_buffer, int send_bytes, uint8_t *rcv_buffer, kermit_t *rcv_msg, int *curr_seq){
+    while (1) {
+        send(socket, send_buffer, send_bytes, 0);
+
+        if ((recebe_mensagem(socket, 1000, rcv_buffer, TAM_BUFFER) != -1) && is_valid_crc(rcv_buffer)) {
+            deserialize_msg(rcv_buffer, rcv_msg);
+
+            if (rcv_msg->sequence == *curr_seq && rcv_msg->type == ACK) {
+                *curr_seq = (*curr_seq + 1) % 32;
+                free(rcv_msg->data);
+                break;
+            }
+            free(rcv_msg->data);
+        }
+    }
+}
