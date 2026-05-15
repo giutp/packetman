@@ -4,6 +4,8 @@
 // Tamanho do mapa (matriz) do jogo
 #define N 40
 
+#include "kermit.h"
+
 // Direção de movimento das entidades (pacman e fantasmas)
 typedef enum {
     UP,

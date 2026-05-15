@@ -18,6 +18,7 @@ char *enum_to_string(types_t type){
     case ESQUERDA: return "ESQUERDA"; break;
     case CIMA: return "CIMA"; break;
     case BAIXO: return "BAIXO"; break;
+    case NULL2: return "NULL2"; break;
     case ERROS: return "ERROS"; break;
     case FIM_DA_TRANSMISSAO: return "FIM_DA_TRANSMISSAO"; break;
     case VITORIA: return "VITORIA"; break;
