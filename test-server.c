@@ -23,15 +23,15 @@ int main(int argc, char **argv){
     memcpy(send_buffer+6, mac_orig, 6);
     memcpy(send_buffer+12, &eth_type, 2);
 
-    FILE *arc = fopen("assets/files/1.txt", "rb");
+    FILE *arc = fopen("assets/files/6.mp4", "rb");
     fseek(arc, 0, SEEK_END);
     long file_size = ftell(arc);
     rewind(arc);
     char name_arc[31];
-    sprintf(name_arc, "1-%ld", file_size);
+    sprintf(name_arc, "6-%ld", file_size);
     
 
-    create_data_msg(&send_msg, strlen(name_arc), TXT, curr_seq, (uint8_t *)name_arc);
+    create_data_msg(&send_msg, strlen(name_arc), MP4, curr_seq, (uint8_t *)name_arc);
     int send_bytes = serialize_msg(&send_msg, send_buffer+14);
     send_with_ack(socket, send_buffer, send_bytes+14, rcv_buffer, &rcv_msg, &curr_seq);
 

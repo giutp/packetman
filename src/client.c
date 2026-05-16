@@ -89,7 +89,7 @@ int main(int argc, char **argv){
     uint8_t mac_dest[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     uint16_t eth_type   = 0x8888;
     memcpy(send_buffer, mac_dest, 6);
-    memcpy(send_buffer+6, mac_dest, 6);
+    memcpy(send_buffer+6, mac_orig, 6);
     memcpy(send_buffer+12, &eth_type, 2);
 
     // Protocolo kermit
@@ -218,7 +218,7 @@ int main(int argc, char **argv){
                                     "Linha atual: %u\n", 
                                     line-1
                                 );
-                                for(int i = 0; i < size_line_map; i++){
+                                for(int i = 0; i < (int)size_line_map; i++){
                                     mvwprintw(game_window, line, i+1, "%c", rcv_msg.data[i]);
                                     wrefresh(game_window);
                                 }

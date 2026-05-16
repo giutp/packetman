@@ -1,7 +1,7 @@
 #include <stdlib.h>
+#include <sys/socket.h>
 
 #include "utils.h"
-#include "kermit.h"
 
 char *enum_to_string(types_t type){
     switch (type){
