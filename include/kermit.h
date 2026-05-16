@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define START_MARKER 0x7e
-#define TAM_BUFFER 36
+#define TAM_BUFFER 50
 
 /* TODO: 
     * melhorar os comentarios

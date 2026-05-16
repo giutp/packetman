@@ -6,7 +6,7 @@ OBJ_DIR			:= src/obj
 
 # flags 
 CC				:= gcc
-CFLAGS 			:= -Wall -Wextra -Wpedantic -Wno-packed-bitfield-compat -I$(INC_DIR)
+CFLAGS 			:= -Wall -Wextra -Wpedantic -Wno-packed-bitfield-compat -g -I$(INC_DIR)
 LDFLAGS 		:= -lncurses
 
 # arquivos fonte

@@ -142,7 +142,7 @@ int recebe_mensagem(int soquete, int timeoutMillis, uint8_t *buffer, int tamanho
     int bytes_lidos;
     do {
         bytes_lidos = recv(soquete, buffer, tamanho_buffer, 0);
-        if (protocolo_e_valido(buffer, bytes_lidos)) return bytes_lidos;
+        if (bytes_lidos > 14 && protocolo_e_valido(buffer+14, bytes_lidos-14)) return bytes_lidos;
     } while (timestamp() - comeco <= timeoutMillis);
 
     return -1;
@@ -152,8 +152,8 @@ void send_with_ack(int socket, uint8_t *send_buffer, int send_bytes, uint8_t *rc
     while (1) {
         send(socket, send_buffer, send_bytes, 0);
 
-        if ((recebe_mensagem(socket, 1000, rcv_buffer, TAM_BUFFER) != -1) && is_valid_crc(rcv_buffer)) {
-            deserialize_msg(rcv_buffer, rcv_msg);
+        if ((recebe_mensagem(socket, 1000, rcv_buffer, TAM_BUFFER) != -1) && is_valid_crc(rcv_buffer+14)) {
+            deserialize_msg(rcv_buffer+14, rcv_msg);
 
             if (rcv_msg->sequence == *curr_seq && rcv_msg->type == ACK) {
                 *curr_seq = (*curr_seq + 1) % 32;

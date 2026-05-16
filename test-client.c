@@ -16,40 +16,46 @@ int main(int argc, char **argv){
     int expected_seq = 0;                                             // sequencia de mensagens
     uint8_t send_buffer[TAM_BUFFER];                                                // buffer de envia mensagem
     uint8_t rcv_buffer[TAM_BUFFER];                                                 // buffer de receber mensagem
+    uint8_t mac_dest[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+    uint8_t mac_orig[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    uint16_t eth_type = 0x8888;
+    memcpy(send_buffer, mac_dest, 6);
+    memcpy(send_buffer+6, mac_orig, 6);
+    memcpy(send_buffer+12, &eth_type, 2);
 
     int flag_ntw = 0;
     while(1){
 
         recv(socket, rcv_buffer, sizeof(rcv_buffer), 0);
         
-        if (is_valid_protocol(rcv_buffer)){
+        if (is_valid_protocol(rcv_buffer+14)){
             // CRC válido
-            if(is_valid_crc(rcv_buffer)){
-                deserialize_msg(rcv_buffer, &rcv_msg);
+            if(is_valid_crc(rcv_buffer+14)){
+                deserialize_msg(rcv_buffer+14, &rcv_msg);
                 // Mensagem recebida é a esperada
                 if (rcv_msg.sequence == expected_seq){                       
                     create_control_msg(&send_msg, ACK, rcv_msg.sequence);
-                    int send_bytes = serialize_msg(&send_msg, send_buffer); 
-                    send(socket, send_buffer, send_bytes, 0);               
+                    int send_bytes = serialize_msg(&send_msg, send_buffer+14); 
+                    send(socket, send_buffer, send_bytes+14, 0);               
                     expected_seq = (expected_seq + 1) % 32;
                     if(rcv_msg.type == VISUALIZACAO){
-                        printf("SUCESSO");
+                        printf("SUCESS\n");
                         flag_ntw = 1;
                     }
                 }
                 // Mensagem repetida
                 else{
                     create_control_msg(&send_msg, ACK, rcv_msg.sequence);
-                    int send_bytes = serialize_msg(&send_msg, send_buffer);
-                    send(socket, send_buffer, send_bytes, 0);
+                    int send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                    send(socket, send_buffer, send_bytes+14, 0);
                 }
                 free(rcv_msg.data);
             }
             // CRC inválido
             else{
                 create_control_msg(&send_msg, NACK, expected_seq);
-                int send_bytes = serialize_msg(&send_msg, send_buffer);
-                send(socket, send_buffer, send_bytes, 0);
+                int send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                send(socket, send_buffer, send_bytes+14, 0);
             }
         }
         if (flag_ntw) break;

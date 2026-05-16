@@ -16,10 +16,16 @@ int main(int argc, char **argv){
     int curr_seq = 0, expected_seq = 0;                                             // sequencia de mensagens
     uint8_t send_buffer[TAM_BUFFER];                                                // buffer de envia mensagem
     uint8_t rcv_buffer[TAM_BUFFER];                                                 // buffer de receber mensagem
+    uint8_t mac_dest[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+    uint8_t mac_orig[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    uint16_t eth_type = 0x8888;
+    memcpy(send_buffer, mac_dest, 6);
+    memcpy(send_buffer+6, mac_orig, 6);
+    memcpy(send_buffer+12, &eth_type, 2);
 
     create_control_msg(&send_msg, VISUALIZACAO, curr_seq);
-    int send_bytes = serialize_msg(&send_msg, send_buffer);
-    send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+    int send_bytes = serialize_msg(&send_msg, send_buffer+14);
+    send_with_ack(socket, send_buffer, send_bytes+14, rcv_buffer, &rcv_msg, &curr_seq);
 
     return 0;
 }
