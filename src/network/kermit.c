@@ -142,7 +142,7 @@ int recebe_mensagem(int soquete, int timeoutMillis, uint8_t *buffer, int tamanho
     int bytes_lidos;
     do {
         bytes_lidos = recv(soquete, buffer, tamanho_buffer, 0);
-        if (bytes_lidos > 14 && protocolo_e_valido(buffer+14, bytes_lidos-14)) return bytes_lidos;
+        if (protocolo_e_valido(buffer+14, bytes_lidos-14)) return bytes_lidos;
     } while (timestamp() - comeco <= timeoutMillis);
 
     return -1;
