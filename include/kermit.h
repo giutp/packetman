@@ -72,6 +72,9 @@ int deserialize_msg(uint8_t *rcv_buffer, kermit_t *rcv_msg);
 // Função wrapper: cria mensagem sem dados chamando create_msg()
 void create_control_msg(kermit_t *msg, uint8_t type, uint8_t seq);
 
+// Função wrapper: cria, serializa e envia mensagem
+void send_control_msgs(int socket, kermit_t *send_msg, types_t type, uint8_t seq, uint8_t *send_buffer);
+
 // Função wrapper: cria mensagem com dados chamando create_msg()
 void create_data_msg(kermit_t *msg, uint8_t size, uint8_t type, uint8_t seq, uint8_t *data);
 
@@ -93,4 +96,4 @@ int protocolo_e_valido(uint8_t *buffer, int tamanho_buffer);
 
 int recebe_mensagem(int soquete, int timeoutMillis, uint8_t *buffer, int tamanho_buffer);
 
-#endif
+#endif // KERMIT_H

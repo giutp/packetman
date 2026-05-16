@@ -29,4 +29,4 @@ typedef struct ghost {
 // + Amarelo: aleatório
 void move_ghosts(char map[N][N], ghost_t *ghosts);
 
-#endif 
+#endif // GHOSTS_H

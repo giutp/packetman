@@ -3,4 +3,4 @@
 
 void init_interface();
 
-#endif
+#endif // INTERFACE_H

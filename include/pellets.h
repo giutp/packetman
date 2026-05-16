@@ -28,4 +28,4 @@ typedef struct pellet {
 // +  0: todos foram atrelados com sucesso
 int bind_pellets_files(pellet_t *pellets);
 
-#endif
+#endif // PELLETS_H

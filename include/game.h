@@ -50,4 +50,4 @@ void build_submatrix(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t
 // + 10: Pacman coletou todas as pastilhas (win)
 int update_world(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, direction_t direction);
 
-#endif
+#endif // GAME_H
