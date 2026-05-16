@@ -115,6 +115,12 @@ void create_control_msg(kermit_t *msg, uint8_t type, uint8_t seq){
     create_msg(msg, 0, type, seq, NULL);
 }
 
+void send_control_msgs(int socket, kermit_t *send_msg, types_t type, uint8_t seq, uint8_t *send_buffer){
+    create_control_msg(send_msg, type, seq);
+    int send_bytes = serialize_msg(send_msg, send_buffer);
+    send(socket, send_buffer, send_bytes + 14, 0);
+}
+
 void create_data_msg(kermit_t *msg, uint8_t size, uint8_t type, uint8_t seq, uint8_t *data){
     create_msg(msg, size, type, seq, data);
 }
@@ -146,21 +152,4 @@ int recebe_mensagem(int soquete, int timeoutMillis, uint8_t *buffer, int tamanho
     } while (timestamp() - comeco <= timeoutMillis);
 
     return -1;
-}
-
-void send_with_ack(int socket, uint8_t *send_buffer, int send_bytes, uint8_t *rcv_buffer, kermit_t *rcv_msg, int *curr_seq){
-    while (1) {
-        send(socket, send_buffer, send_bytes, 0);
-
-        if ((recebe_mensagem(socket, 1000, rcv_buffer, TAM_BUFFER) != -1) && is_valid_crc(rcv_buffer+14)) {
-            deserialize_msg(rcv_buffer+14, rcv_msg);
-
-            if (rcv_msg->sequence == *curr_seq && rcv_msg->type == ACK) {
-                *curr_seq = (*curr_seq + 1) % 32;
-                free(rcv_msg->data);
-                break;
-            }
-            free(rcv_msg->data);
-        }
-    }
 }
