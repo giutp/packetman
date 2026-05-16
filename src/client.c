@@ -15,7 +15,8 @@
 // Cria o arquivo mandado pelo servidor para download
 // Salva em path_arc o caminho do arquivo aberto
 // Retorna:
-// + Ponteiro para o arquivo criado
+// + Sucesso: Ponteiro para o arquivo criado
+// + Erro: NULL
 static FILE *create_arc(char *name_size_arc, char *path_arc, unsigned long *size_arc){
     FILE *arc;
     // size_arc ainda esta inutil, mas sera usado para log
@@ -52,17 +53,6 @@ static FILE *create_arc(char *name_size_arc, char *path_arc, unsigned long *size
     }
 
     return NULL;
-}
-
-// Imprime mensagens de log na janela de logs
-static void print_log(WINDOW *log_window, const char *log, ...){
-    va_list args;
-    
-    va_start(args, log);
-    vw_printw(log_window, log, args);
-    va_end(args);
-
-    wrefresh(log_window);
 }
 
 int main(int argc, char **argv){
@@ -218,7 +208,7 @@ int main(int argc, char **argv){
                                     "Linha atual: %u\n", 
                                     line-1
                                 );
-                                for(int i = 0; i < (int)size_line_map; i++){
+                                for(unsigned int i = 0; i < size_line_map; i++){
                                     mvwprintw(game_window, line, i+1, "%c", rcv_msg.data[i]);
                                     wrefresh(game_window);
                                 }
