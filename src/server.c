@@ -5,7 +5,6 @@
 #include "kermit.h"
 #include "game.h"
 
-#define TAM_BUFFER 36
 #define MAX_DATA 32
 
 int main(int argc, char **argv){
@@ -40,6 +39,15 @@ int main(int argc, char **argv){
     int curr_seq = 0, expected_seq = 0;                                             // sequencia de mensagens
     uint8_t send_buffer[TAM_BUFFER];                                                // buffer de envia mensagem
     uint8_t rcv_buffer[TAM_BUFFER];                                                 // buffer de receber mensagem
+    int send_bytes;
+
+    // Ethernet
+    uint8_t mac_orig[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+    uint8_t mac_dest[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    uint16_t eth_type   = 0x8888;
+    memcpy(send_buffer, mac_dest, 6);
+    memcpy(send_buffer+6, mac_orig, 6);
+    memcpy(send_buffer+12, &eth_type, 2);
 
     // inicializado com valor para ser ignorado
     int game_response = -10;
@@ -58,18 +66,18 @@ int main(int argc, char **argv){
             // envio dos dados parciais
             while ((bytes_read = fread(file_buffer, 1, MAX_DATA, pellet_file)) > 0) {
                 create_data_msg( &send_msg, DADOS, curr_seq, file_buffer, bytes_read);
-                int send_bytes = serialize_msg(&send_msg, send_buffer);
+                send_bytes = serialize_msg(&send_msg, send_buffer);
                 send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
             }
         }
         else if(game_response == -1){
             create_control_msg(&send_msg, DERROTA, curr_seq);
-            int send_bytes = serialize_msg(&send_msg, send_buffer);
+            send_bytes = serialize_msg(&send_msg, send_buffer);
             send(socket, send_buffer, send_bytes, 0);
         }
         else if(game_response == 10){
             create_control_msg(&send_msg, VITORIA, curr_seq);
-            int send_bytes = serialize_msg(&send_msg, send_buffer);
+            send_bytes = serialize_msg(&send_msg, send_buffer);
             send(socket, send_buffer, send_bytes, 0);
         }
 
@@ -77,12 +85,12 @@ int main(int argc, char **argv){
 
         // Envio do identificado de visualização
         create_control_msg(&send_msg, VISUALIZACAO, curr_seq);
-        int send_bytes = serialize_msg(&send_msg, send_buffer);
+        send_bytes = serialize_msg(&send_msg, send_buffer);
         send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 
         // Envio do raio
-        create_control_msg(&send_msg, RAIO, curr_seq);
-        int send_bytes = serialize_msg(&send_msg, send_buffer);
+        create_data_msg(&send_msg, sizeof(int), RAIO, curr_seq, pacman.radius);
+        send_bytes = serialize_msg(&send_msg, send_buffer);
         send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 
         // Envio da área visível
