@@ -50,15 +50,16 @@ int main(int argc, char **argv){
     memcpy(send_buffer+12, &eth_type, 2);
 
     // inicializado com valor para ser ignorado
+    int game_message_type = -1;
     int game_response = -10;
     FILE *pellet_file;     
 
     while(1){
         if(game_response >= 1 && game_response <= 6){
             // Envio do identificador da pastilha
-            create_control_msg(&send_msg, direction, curr_seq);
+            create_control_msg(&send_msg, game_message_type, curr_seq);
             send_bytes = serialize_msg(&send_msg, send_buffer);
-            send(socket, send_buffer, send_bytes, 0);
+            send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 
             uint8_t file_buffer[MAX_DATA];
             size_t bytes_read;
@@ -70,18 +71,11 @@ int main(int argc, char **argv){
                 send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
             }
         }
-        else if(game_response == -1){
+        else if(game_response == -1 || game_response == 10){
             create_control_msg(&send_msg, DERROTA, curr_seq);
             send_bytes = serialize_msg(&send_msg, send_buffer);
-            send(socket, send_buffer, send_bytes, 0);
+            send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
         }
-        else if(game_response == 10){
-            create_control_msg(&send_msg, VITORIA, curr_seq);
-            send_bytes = serialize_msg(&send_msg, send_buffer);
-            send(socket, send_buffer, send_bytes, 0);
-        }
-
-        // envio do mapa
 
         // Envio do identificado de visualização
         create_control_msg(&send_msg, VISUALIZACAO, curr_seq);
@@ -173,25 +167,35 @@ int main(int argc, char **argv){
 
         switch (game_response)
         {
+            case -1:
+                game_message_type = DERROTA;
+                break;
             case 1:
                 pellet_file = fopen("../assets/files/1.txt", "r");
+                game_message_type == TXT;
                 break;
             case 2:
                 pellet_file = fopen("../assets/files/2.txt", "r");
+                game_message_type = TXT;
                 break;
             case 3:
                 pellet_file = fopen("../assets/files/3.jpg", "r");
+                game_message_type = JPG;
                 break;
             case 4:
                 pellet_file = fopen("../assets/files/4.jpg", "r");
+                game_message_type = JPG;
                 break;
             case 5:
                 pellet_file = fopen("../assets/files/5.mp4", "r");
+                game_message_type = MP4;
                 break;
             case 6:
                 pellet_file = fopen("../assets/files/6.mp4", "r");
-                break;
-            default:
+                game_message_type = MP4;
+                break;    
+            case 10:
+                game_message_type = VITORIA;       
                 break;
         }
     }
