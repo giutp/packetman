@@ -57,6 +57,8 @@ int read_map(char *filepath, char map[N][N]){
 
     if (!arc) return -1;
 
+    printf("Passou\n");
+
     for(int i = 0; i < N; i++){
         char line[128];
         fgets(line, 128, arc);
@@ -65,7 +67,9 @@ int read_map(char *filepath, char map[N][N]){
                 char *token = strtok(j == 0 ? line : NULL, ";");
                 if (!token) return -1;
                 map[i][j] = token[0];
+                printf("%c ", map[i][j]);
             }
+        printf("\n");
     }
 
     fclose(arc);

@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string.h>
 
+#include <time.h>
 #include <sys/socket.h>
 #include "kermit.h"
 #include "game.h"
@@ -10,6 +11,8 @@
 #define MAX_DATA 32
 
 int main(int argc, char **argv){
+    srand(0);
+
     if (argc < 2){
         fprintf(stderr, "Necessario informar interface da placa de rede\n");
         exit(-1);
