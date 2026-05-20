@@ -57,7 +57,7 @@ int main(int argc, char **argv){
         if(game_response >= 1 && game_response <= 6){
             // Envio do identificador da pastilha
             create_control_msg(&send_msg, direction, curr_seq);
-            int send_bytes = serialize_msg(&send_msg, send_buffer);
+            send_bytes = serialize_msg(&send_msg, send_buffer);
             send(socket, send_buffer, send_bytes, 0);
 
             uint8_t file_buffer[MAX_DATA];
@@ -108,7 +108,7 @@ int main(int argc, char **argv){
                 chunk_size = total - offset;
 
             create_data_msg(&send_msg, DADOS, curr_seq, submatrix_buffer + offset, chunk_size);
-            int send_bytes = serialize_msg(&send_msg, send_buffer);
+            send_bytes = serialize_msg(&send_msg, send_buffer);
             send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 
             offset += chunk_size;
@@ -132,7 +132,7 @@ int main(int argc, char **argv){
                     // Mensagem recebida é a esperada
                     if (rcv_msg.sequence == expected_seq){                       
                         create_control_msg(&send_msg, ACK, rcv_msg.sequence);
-                        int send_bytes = serialize_msg(&send_msg, send_buffer); 
+                        send_bytes = serialize_msg(&send_msg, send_buffer); 
                         send(socket, send_buffer, send_bytes, 0);               
                         expected_seq = (expected_seq + 1) % 32;
 
@@ -155,7 +155,7 @@ int main(int argc, char **argv){
                     // Mensagem repetida
                     else{
                         create_control_msg(&send_msg, ACK, rcv_msg.sequence);
-                        int send_bytes = serialize_msg(&send_msg, send_buffer);
+                        send_bytes = serialize_msg(&send_msg, send_buffer);
                         send(socket, send_buffer, send_bytes, 0);
                     }
                     free(rcv_msg.data);
@@ -163,7 +163,7 @@ int main(int argc, char **argv){
                 // CRC inválido
                 else{
                     create_control_msg(&send_msg, NACK, expected_seq);
-                    int send_bytes = serialize_msg(&send_msg, send_buffer);
+                    send_bytes = serialize_msg(&send_msg, send_buffer);
                     send(socket, send_buffer, send_bytes, 0);
                 }
             }
