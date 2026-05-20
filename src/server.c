@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
+#include <sys/socket.h>
 #include "kermit.h"
 #include "game.h"
 
@@ -26,10 +28,8 @@ int main(int argc, char **argv){
     }
 
     // TODO: colocar mensagem de erro
-    else {
-        FILE *f = fopen(argv[2], "r");
-        read_map(f, map);
-    }
+    else 
+        read_map(argv[2], map);
 
     init_entities(map, &pacman, ghosts, pellets);
 
@@ -66,7 +66,7 @@ int main(int argc, char **argv){
 
             // envio dos dados parciais
             while ((bytes_read = fread(file_buffer, 1, MAX_DATA, pellet_file)) > 0) {
-                create_data_msg( &send_msg, DADOS, curr_seq, file_buffer, bytes_read);
+                create_data_msg( &send_msg, bytes_read, DADOS, curr_seq, file_buffer);
                 send_bytes = serialize_msg(&send_msg, send_buffer+14);
                 send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
             }
@@ -84,7 +84,7 @@ int main(int argc, char **argv){
         send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 
         // Envio do raio
-        create_data_msg(&send_msg, sizeof(int), RAIO, curr_seq, pacman.radius);
+        create_data_msg(&send_msg, sizeof(int), RAIO, curr_seq, (uint8_t*) &pacman.radius);
         send_bytes = serialize_msg(&send_msg, send_buffer+14);
         send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 
@@ -102,7 +102,7 @@ int main(int argc, char **argv){
             if (total - offset < MAX_DATA)
                 chunk_size = total - offset;
 
-            create_data_msg(&send_msg, DADOS, curr_seq, submatrix_buffer + offset, chunk_size);
+            create_data_msg(&send_msg, chunk_size, DADOS, curr_seq, submatrix_buffer + offset);
             send_bytes = serialize_msg(&send_msg, send_buffer+14);
             send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 
@@ -114,8 +114,6 @@ int main(int argc, char **argv){
         create_control_msg(&send_msg, FIM_DA_TRANSMISSAO, curr_seq);
         int send_bytes = serialize_msg(&send_msg, send_buffer+14);
         send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
-
-        int flag_ntw = 0;
         while(1){
 
             recv(socket, rcv_buffer, sizeof(rcv_buffer), 0);
@@ -173,7 +171,7 @@ int main(int argc, char **argv){
                 break;
             case 1:
                 pellet_file = fopen("../assets/files/1.txt", "r");
-                game_message_type == TXT;
+                game_message_type = TXT;
                 break;
             case 2:
                 pellet_file = fopen("../assets/files/2.txt", "r");
