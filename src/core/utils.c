@@ -30,7 +30,7 @@ char *enum_to_string(types_t type){
 
 void send_with_ack(int socket, uint8_t *send_buffer, int send_bytes, uint8_t *rcv_buffer, kermit_t *rcv_msg, int *curr_seq){
     while (1) {
-        send(socket, send_buffer, send_bytes, 0);
+        send(socket, send_buffer, send_bytes + 14, 0);
 
         if ((recebe_mensagem(socket, 1000, rcv_buffer, TAM_BUFFER) != -1) && is_valid_crc(rcv_buffer+14)) {
             deserialize_msg(rcv_buffer+14, rcv_msg);
