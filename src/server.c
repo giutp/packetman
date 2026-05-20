@@ -72,9 +72,10 @@ int main(int argc, char **argv){
             }
         }
         else if(game_response == -1 || game_response == 10){
-            create_control_msg(&send_msg, DERROTA, curr_seq);
+            create_control_msg(&send_msg, game_message_type, curr_seq);
             send_bytes = serialize_msg(&send_msg, send_buffer);
             send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+            break;
         }
 
         // Envio do identificado de visualização
