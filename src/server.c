@@ -31,7 +31,11 @@ int main(int argc, char **argv){
     else 
         read_map(argv[2], map);
 
+    printf("Criado mapa\n");
+
     init_entities(map, &pacman, ghosts, pellets);
+
+    printf("Inicializado entidades\n");
 
     // Inicialização variáveis de rede
     int socket = create_raw_socket(argv[1]);
@@ -78,15 +82,21 @@ int main(int argc, char **argv){
             break;
         }
 
+        printf("Início envio servidor\n");
+
         // Envio do identificado de visualização
         create_control_msg(&send_msg, VISUALIZACAO, curr_seq);
         send_bytes = serialize_msg(&send_msg, send_buffer+14);
         send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 
+        printf("Mensagem de visualização enviada\n");
+
         // Envio do raio
         create_data_msg(&send_msg, sizeof(int), RAIO, curr_seq, (uint8_t*) &pacman.radius);
         send_bytes = serialize_msg(&send_msg, send_buffer+14);
         send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+
+        printf("Mensagem de raio enviada\n");
 
         // Envio da área visível
         int side = 2 * pacman.radius + 1;
@@ -107,7 +117,11 @@ int main(int argc, char **argv){
             send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 
             offset += chunk_size;
+
+            printf("Chunk de mapa enviada\n");
         }
+
+        printf("Mapa enviado\n");
 
         free(submatrix_buffer);
 
