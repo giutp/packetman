@@ -137,8 +137,8 @@ int main(int argc, char **argv){
     // recv -> verificação (crc+nack/ack) -> download/desenhar -> captar input -> criar mensagem -> enviar -> esperar (nack/ack do servidor) -> recv
     while(1){
         int flag_ntw = 0;                                                                                       // flag do loop de recepção
-        unsigned int size_line_map = 0, line = 1;                                                               // tamanho da linha e linha atual
-        unsigned long size_arc = 0, total_donwloaded = 0;                                                       // tamanho do arquivo de download e total baixado
+        uint32_t size_line_map = 0, line = 1;                                                               // tamanho da linha e linha atual
+        uint64_t size_arc = 0, total_donwloaded = 0;                                                       // tamanho do arquivo de download e total baixado
         char path_arc[1024];                                                                                    // caminho do arquivo de download
         FILE *arc = NULL;                                                                                       // arquivo a ser criado (download)
         while(1){
@@ -171,7 +171,7 @@ int main(int argc, char **argv){
                     deserialize_msg(rcv_buffer+14, &rcv_msg);                                                      // Monta a struct kermit
                     print_log(
                             log_window, 
-                            "Mensagem deserializada, tamanho: %d | sequencia: %d | tipo: %ss\n", 
+                            "Mensagem deserializada, tamanho: %d | sequencia: %d | tipo: %s\n", 
                             rcv_msg.size, 
                             rcv_msg.sequence, 
                             enum_to_string(rcv_msg.type)
@@ -189,8 +189,9 @@ int main(int argc, char **argv){
                         // Verificação de tipo de mensagem dentre todos os possíveis tipos de recepção do cliente
                         switch (rcv_msg.type){
                         // Visão do Pacman
+                        
                         case RAIO:
-                            size_line_map = *(int *)(rcv_msg.data) * 2 + 1;
+                            size_line_map = *(uint32_t *)(rcv_msg.data) * 2 + 1;
                             print_log(
                                 log_window, 
                                 "Raio recebido. Tamanho do mapa a ser desenhado: %ux%u | Tamanho da linha: %u\n", 

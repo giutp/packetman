@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <stdio.h>
 
 #include "utils.h"
 
@@ -36,11 +37,13 @@ void send_with_ack(int socket, uint8_t *send_buffer, int send_bytes, uint8_t *rc
             deserialize_msg(rcv_buffer+14, rcv_msg);
 
             if (rcv_msg->sequence == *curr_seq && rcv_msg->type == ACK) {
+                printf("Recebido ACK com sucesso\n");
                 *curr_seq = (*curr_seq + 1) % 32;
                 free(rcv_msg->data);
                 break;
             }
             free(rcv_msg->data);
         }
+        else printf("TIMEOUT OU CRC INVALIDO\n");
     }
 }

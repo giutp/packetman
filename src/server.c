@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include "kermit.h"
 #include "game.h"
+#include <arpa/inet.h>
 
 #define MAX_DATA 32
 
@@ -88,19 +89,19 @@ int main(int argc, char **argv){
 
         printf("Início envio servidor\n");
 
+        // Envio do raio
+        create_data_msg(&send_msg, (uint8_t)sizeof(uint32_t), RAIO, curr_seq, (uint8_t *)&pacman.radius);
+        printf("Raio enviado: %d\n", pacman.radius);
+        send_bytes = serialize_msg(&send_msg, send_buffer+14);
+        send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+        
+        printf("Mensagem de raio enviada\n");
+
         // Envio do identificado de visualização
         create_control_msg(&send_msg, VISUALIZACAO, curr_seq);
         send_bytes = serialize_msg(&send_msg, send_buffer+14);
         send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
-
         printf("Mensagem de visualização enviada\n");
-
-        // Envio do raio
-        create_data_msg(&send_msg, sizeof(int), RAIO, curr_seq, (uint8_t*) &pacman.radius);
-        send_bytes = serialize_msg(&send_msg, send_buffer+14);
-        send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
-
-        printf("Mensagem de raio enviada\n");
 
         // Envio da área visível
         int side = 2 * pacman.radius + 1;
