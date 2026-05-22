@@ -11,7 +11,7 @@
 #define MAX_DATA 32
 
 int main(int argc, char **argv){
-    srand(0);
+    srand(time(NULL));
 
     if (argc < 2){
         fprintf(stderr, "Necessario informar interface da placa de rede\n");
@@ -27,6 +27,7 @@ int main(int argc, char **argv){
 
     // TODO: colocar mensagem de erro
     if (argc == 2){
+        printf("Mapa padrão e entidades aleatórias\n");
         randomizer_entities(map);
     }
 

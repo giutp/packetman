@@ -55,7 +55,7 @@ int read_map(char *filepath, char map[N][N]){
     // vale a pena checar se esta sendo inserindo o quantidade de entidades permitidas?p
     FILE *arc = fopen(filepath, "r");
 
-    if (!arc) return -1;
+    if (!arc) return 0;
 
     printf("Passou\n");
 
@@ -64,17 +64,17 @@ int read_map(char *filepath, char map[N][N]){
         fgets(line, 128, arc);
 
             for(int j = 0; j < N; j++) {
-                char *token = strtok(j == 0 ? line : NULL, ";");
+                char *token = strtok(j == 0 ? line : NULL, ",");
                 if (!token) return -1;
                 map[i][j] = token[0];
-                printf("%c ", map[i][j]);
+                printf("%c", map[i][j]);
             }
         printf("\n");
     }
 
     fclose(arc);
     
-    return 0;
+    return 1;
 }
 
 int randomizer_entities(char map[N][N]){
@@ -83,13 +83,19 @@ int randomizer_entities(char map[N][N]){
     
     int i = 0;
     coord_t coord;
+    printf("===========================\n");
     while(i < NUM_ENT){
         coord = rand_coord();
+        printf("Coordenada sorteada: (%d,%d)\n", coord.y, coord.x);
+        printf("Simbolo da coordenada: %c\n", map[coord.y][coord.x]);
         if (map[coord.y][coord.x] == '0'){
+            printf("Coordenada sorteada valida\n");
+            printf("Entidade %c inicilizada\n", symbols[i]);
             map[coord.y][coord.x] = symbols[i];
             i++;
         }
     }
+    printf("===========================\n\n");
     
     return 0;
 }
