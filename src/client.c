@@ -194,9 +194,8 @@ int main(int argc, char **argv){
                             size_line_map = *(uint32_t *)(rcv_msg.data) * 2 + 1;
                             print_log(
                                 log_window, 
-                                "Raio recebido. Tamanho do mapa a ser desenhado: %ux%u | Tamanho da linha: %u\n", 
-                                *(int *)(rcv_msg.data),
-                                *(int *)(rcv_msg.data),
+                                "Raio recebido. Tamanho do mapa a ser desenhado: %ux%u\n", 
+                                size_line_map,
                                 size_line_map
                             );
                             break;

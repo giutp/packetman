@@ -93,15 +93,10 @@ int main(int argc, char **argv){
         create_data_msg(&send_msg, (uint8_t)sizeof(uint32_t), RAIO, curr_seq, (uint8_t *)&pacman.radius);
         printf("Raio enviado: %d\n", pacman.radius);
         send_bytes = serialize_msg(&send_msg, send_buffer+14);
+        printf("Bytes serializados: %d\n", send_bytes);
         send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
         
         printf("Mensagem de raio enviada\n");
-
-        // Envio do identificado de visualização
-        create_control_msg(&send_msg, VISUALIZACAO, curr_seq);
-        send_bytes = serialize_msg(&send_msg, send_buffer+14);
-        send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
-        printf("Mensagem de visualização enviada\n");
 
         // Envio da área visível
         int side = 2 * pacman.radius + 1;
@@ -117,7 +112,11 @@ int main(int argc, char **argv){
             if (total - offset < MAX_DATA)
                 chunk_size = total - offset;
 
-            create_data_msg(&send_msg, chunk_size, DADOS, curr_seq, submatrix_buffer + offset);
+            // TODO: Mudar a forma de copiar o buffer
+            for(int i = 14; i<50; i++)
+                send_buffer[i] = submatrix_buffer[i] + offset;
+
+            create_data_msg(&send_msg, chunk_size, VISUALIZACAO, curr_seq, submatrix_buffer + offset);
             send_bytes = serialize_msg(&send_msg, send_buffer+14);
             send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 

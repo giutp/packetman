@@ -83,7 +83,8 @@ int serialize_msg(kermit_t *send_msg, uint8_t *send_buffer){
     }
     send_buffer[4 + send_msg->size] = calculate_crc8(send_buffer, 4 + send_msg->size);
 
-    return (4 + send_msg->size + 1);
+    printf("Bytes serializados: %d\n", 4+(int)send_msg->size + 1);
+    return (4 + (int)send_msg->size + 1);
 }
 
 int deserialize_msg(uint8_t *rcv_buffer, kermit_t *rcv_msg){
@@ -99,7 +100,7 @@ int deserialize_msg(uint8_t *rcv_buffer, kermit_t *rcv_msg){
     }
     rcv_msg->crc = rcv_buffer[4 + rcv_buffer[1]];
 
-    return (4 + rcv_buffer[1] + 1);
+    return (4 + (int)rcv_buffer[1] + 1);
 }
 
 // Cria mensagem usando o procolo kermit
@@ -117,7 +118,7 @@ void create_control_msg(kermit_t *msg, uint8_t type, uint8_t seq){
 
 void send_control_msgs(int socket, kermit_t *send_msg, types_t type, uint8_t seq, uint8_t *send_buffer){
     create_control_msg(send_msg, type, seq);
-    int send_bytes = serialize_msg(send_msg, send_buffer);
+    int send_bytes = serialize_msg(send_msg, send_buffer+14);
     send(socket, send_buffer, send_bytes + 14, 0);
 }
 
