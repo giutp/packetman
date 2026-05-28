@@ -1,7 +1,6 @@
 # diretórios
 INC_DIR 		:= include
 SRC_DIR			:= src
-BIN_DIR			:= bin
 OBJ_DIR			:= src/obj
 DOW_DIR			:= assets/download
 
@@ -23,8 +22,8 @@ OBJ_SERVER		:= $(patsubst %.c, $(OBJ_DIR)/%.o, $(notdir $(SRC_SERVER)))
 OBJ_COMMON		:= $(patsubst %.c, $(OBJ_DIR)/%.o, $(notdir $(SRC_COMMON)))
 
 # executáveis 
-TARGET_CLIENT 	:= $(BIN_DIR)/client
-TARGET_SERVER	:= $(BIN_DIR)/server
+TARGET_CLIENT 	:= client
+TARGET_SERVER	:= server
 
 
 # ==============
@@ -41,12 +40,10 @@ $(OBJ_DIR)/%.o: %.c
 
 client: $(OBJ_CLIENT) $(OBJ_COMMON)
 	@mkdir -p $(DOW_DIR)
-	@mkdir -p $(BIN_DIR)
 	$(CC) $^ -o $(TARGET_CLIENT) $(LDFLAGS)
 
 server: $(OBJ_SERVER) $(OBJ_COMMON)
-	@mkdir -p $(BIN_DIR)
-	$(CC) $^ -o $(TARGET_SERVER) $(LDFLAGS)
+	$(CC) $^ -o $(TARGET_SERVER)
 
 clean:
-	@rm -rf $(OBJ_DIR) $(BIN_DIR) $(DOW_DIR)
+	@rm -rf $(OBJ_DIR) $(DOW_DIR) $(TARGET_CLIENT) $(TARGET_SERVER)
