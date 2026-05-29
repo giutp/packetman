@@ -58,16 +58,14 @@ int read_map(char *filepath, char map[N][N]){
     if (!arc) return 0;
 
     printf("Passou\n");
-
     for(int i = 0; i < N; i++){
         char line[128];
         fgets(line, 128, arc);
-
             for(int j = 0; j < N; j++) {
                 char *token = strtok(j == 0 ? line : NULL, ",");
                 if (!token) return -1;
                 map[i][j] = token[0];
-                printf("%c", map[i][j]);
+                printf("%c ", map[i][j]);
             }
         printf("\n");
     }
@@ -78,8 +76,11 @@ int read_map(char *filepath, char map[N][N]){
 }
 
 int randomizer_entities(char map[N][N]){
-    if (!read_map("../assets/map_default/default.csv", map))
-    return -1;
+    if (!read_map("assets/map_default/default.csv", map)){
+        printf("Erro no read map\n");
+        return -1;
+    }
+
     
     int i = 0;
     coord_t coord;
@@ -94,6 +95,15 @@ int randomizer_entities(char map[N][N]){
             map[coord.y][coord.x] = symbols[i];
             i++;
         }
+    }
+    printf("===========================\n\n");
+
+    printf("Mapa apos inicializar\n");
+    for (int i = 0; i <N; i++){
+        for (int j = 0; j < N; j++){
+            printf("%c ", map[i][j]);
+        }
+        printf("\n");
     }
     printf("===========================\n\n");
     
