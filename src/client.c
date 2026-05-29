@@ -386,12 +386,12 @@ int main(int argc, char **argv){
         int flag_rcv = 0;                                                                                       // flag de loop de espera de ack/nack
         while(1){
             // Timeout (de 1s -- por enquanto) + CRC
-            if ((recebe_mensagem(socket, 1000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer))){
+            if ((recebe_mensagem(socket, 1000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer+14))){
                 print_log(
                     log_window, 
                     "Servidor recebeu mensagem\n"
                 );
-                deserialize_msg(rcv_buffer, &rcv_msg);
+                deserialize_msg(rcv_buffer+14, &rcv_msg);
                 if (rcv_msg.sequence == curr_seq && rcv_msg.type == ACK){
                     wprintw(log_window, "Pacote recebido com sucesso pelo servidor\n");
                     wrefresh(log_window);
@@ -403,7 +403,7 @@ int main(int argc, char **argv){
             else {
                 print_log(
                     log_window, 
-                    "TIMEOUT OU CRC INVÁLIDO. Reenviando mensagem...\n"
+                    "TIMEOUT OU CRC INVALIDO. Reenviando mensagem...\n"
                 );
                 send(socket, send_buffer, 19+send_buffer[15], 0);
             }
