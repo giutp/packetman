@@ -104,21 +104,32 @@ int main(int argc, char **argv){
 
         uint8_t *submatrix_buffer = malloc(total*sizeof(uint8_t));
         build_submatrix(map, &pacman, ghosts, pellets, submatrix_buffer);
-       
-        int offset = 0;
 
-        while (offset < total) {
-            int chunk_size = MAX_DATA;
-            if (total - offset < MAX_DATA)
-                chunk_size = total - offset;
 
-            create_data_msg(&send_msg, chunk_size, VISUALIZACAO, curr_seq, submatrix_buffer + offset);
-            send_bytes = serialize_msg(&send_msg, send_buffer+14);
-            send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+        printf("Submatriz construida\n");
+        for (int i = 0; i < side; i++){
+            for (int j = 0; j < side; j++){
+                printf("%c ", submatrix_buffer[(i*side)+j]);
+            }
+            printf("\n");
+        }
 
-            offset += chunk_size;
 
-            printf("Chunk de mapa enviada\n");
+        for (int i = 0; i < side; i++){
+            int offset_line = i * side;
+            int offset = 0;
+
+            while (offset < side){
+                int chunk_size = side - offset < MAX_DATA ? side - offset : MAX_DATA;
+
+                create_data_msg(&send_msg, chunk_size, VISUALIZACAO, curr_seq, submatrix_buffer+offset+offset_line);
+                send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+
+                offset += chunk_size;
+                printf("Chunk de linha enviada\n");
+            }
+            
         }
 
         printf("Mapa enviado\n");
@@ -137,10 +148,11 @@ int main(int argc, char **argv){
                 if(is_valid_crc(rcv_buffer+14)){
                     deserialize_msg(rcv_buffer+14, &rcv_msg);
                     // Mensagem recebida é a esperada
-                    if (rcv_msg.sequence == expected_seq){                       
+                    if (rcv_msg.sequence == expected_seq){
+                        printf("Enviando ACK\n");                       
                         create_control_msg(&send_msg, ACK, rcv_msg.sequence);
                         send_bytes = serialize_msg(&send_msg, send_buffer+14); 
-                        send(socket, send_buffer, send_bytes, 0);               
+                        send(socket, send_buffer, send_bytes+14, 0);               
                         expected_seq = (expected_seq + 1) % 32;
 
                         // Precisa de flag se sempre é direção?
@@ -158,9 +170,12 @@ int main(int argc, char **argv){
                                 direction = DOWN;
                                 break;    
                         }
+
+                        break;
                     }
                     // Mensagem repetida
                     else{
+                        printf("Enviando ACK de mensagem repetida\n");
                         create_control_msg(&send_msg, ACK, rcv_msg.sequence);
                         send_bytes = serialize_msg(&send_msg, send_buffer+14);
                         send(socket, send_buffer, send_bytes, 0);
@@ -169,6 +184,7 @@ int main(int argc, char **argv){
                 }
                 // CRC inválido
                 else{
+                    printf("Enviando NACK\n");
                     create_control_msg(&send_msg, NACK, expected_seq);
                     send_bytes = serialize_msg(&send_msg, send_buffer+14);
                     send(socket, send_buffer, send_bytes, 0);
@@ -184,27 +200,27 @@ int main(int argc, char **argv){
                 game_message_type = DERROTA;
                 break;
             case 1:
-                pellet_file = fopen("../assets/files/1.txt", "r");
+                pellet_file = fopen("assets/files/1.txt", "r");
                 game_message_type = TXT;
                 break;
             case 2:
-                pellet_file = fopen("../assets/files/2.txt", "r");
+                pellet_file = fopen("assets/files/2.txt", "r");
                 game_message_type = TXT;
                 break;
             case 3:
-                pellet_file = fopen("../assets/files/3.jpg", "r");
+                pellet_file = fopen("assets/files/3.jpg", "r");
                 game_message_type = JPG;
                 break;
             case 4:
-                pellet_file = fopen("../assets/files/4.jpg", "r");
+                pellet_file = fopen("assets/files/4.jpg", "r");
                 game_message_type = JPG;
                 break;
             case 5:
-                pellet_file = fopen("../assets/files/5.mp4", "r");
+                pellet_file = fopen("assets/files/5.mp4", "r");
                 game_message_type = MP4;
                 break;
             case 6:
-                pellet_file = fopen("../assets/files/6.mp4", "r");
+                pellet_file = fopen("assets/files/6.mp4", "r");
                 game_message_type = MP4;
                 break;    
             case 10:
