@@ -112,10 +112,6 @@ int main(int argc, char **argv){
             if (total - offset < MAX_DATA)
                 chunk_size = total - offset;
 
-            // TODO: Mudar a forma de copiar o buffer
-            for(int i = 14; i<50; i++)
-                send_buffer[i] = submatrix_buffer[i] + offset;
-
             create_data_msg(&send_msg, chunk_size, VISUALIZACAO, curr_seq, submatrix_buffer + offset);
             send_bytes = serialize_msg(&send_msg, send_buffer+14);
             send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);

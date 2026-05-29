@@ -137,7 +137,7 @@ int main(int argc, char **argv){
     // recv -> verificação (crc+nack/ack) -> download/desenhar -> captar input -> criar mensagem -> enviar -> esperar (nack/ack do servidor) -> recv
     while(1){
         int flag_ntw = 0;                                                                                       // flag do loop de recepção
-        uint32_t size_line_map = 0, line = 1;                                                               // tamanho da linha e linha atual
+        uint32_t size_line_map = 0, offset_view = 0;                                                               // tamanho da linha e linha atual
         uint64_t size_arc = 0, total_donwloaded = 0;                                                       // tamanho do arquivo de download e total baixado
         char path_arc[1024];                                                                                    // caminho do arquivo de download
         FILE *arc = NULL;                                                                                       // arquivo a ser criado (download)
@@ -192,6 +192,7 @@ int main(int argc, char **argv){
                         
                         case RAIO:
                             size_line_map = *(uint32_t *)(rcv_msg.data) * 2 + 1;
+                            offset_view = 0;
                             print_log(
                                 log_window, 
                                 "Raio recebido. Tamanho do mapa a ser desenhado: %ux%u\n", 
@@ -203,21 +204,15 @@ int main(int argc, char **argv){
                         // Desenhar o mapa
                         case VISUALIZACAO:
                             if (size_line_map != 0){
-                                print_log(
-                                    log_window, 
-                                    "Linha atual: %u\n", 
-                                    line-1
-                                );
-                                for(unsigned int i = 0; i < size_line_map; i++){
-                                    mvwprintw(game_window, line, i+1, "%c", rcv_msg.data[i]);
-                                    wrefresh(game_window);
+                                for(unsigned int i = 0; i < rcv_msg.size; i++){
+                                    int calc_y = offset_view / size_line_map;
+                                    int calc_x = offset_view / size_line_map;
+
+                                    mvwprintw(game_window, calc_y + 1, calc_x + 1, "%c", rcv_msg.data[i]);
+
+                                    offset_view++;
                                 }
-                                line++;
-                                print_log(
-                                    log_window, 
-                                    "Próxima linha: %u\n", 
-                                    line-1
-                                );
+                                wrefresh(game_window);
                             }
                             break;
 
