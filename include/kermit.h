@@ -25,7 +25,7 @@ typedef enum kermit_types_t {
     ESQUERDA,                           // movimento para esquerda
     CIMA,                               // movimento para cima
     BAIXO,                              // movimento para baixo
-    NULL2,                              // a definir
+    NFILE,                              // a definir
     ERROS,                              // erros do cliente (permissao/espaco)
     FIM_DA_TRANSMISSAO,                 // fim de mensagem do mapa
     VITORIA,                            // jogador venceu
