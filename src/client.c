@@ -151,7 +151,6 @@ int main(int argc, char **argv){
             );
 
             // Mensagem do servidor -- qualquer outras mensagens serão ignoradas
-            // <<Falta tratar perda de ack/nack do ultimo pacote>>
             if (is_valid_protocol(rcv_buffer+14)){
                 print_log(
                     log_window, 
@@ -178,7 +177,7 @@ int main(int argc, char **argv){
                     send_control_msgs(socket, &send_msg, ACK, rcv_msg.sequence, send_buffer);
 
                     // Mensagem recebida é a esperada
-                    if (rcv_msg.sequence != expected_seq){     
+                    if (rcv_msg.sequence == expected_seq){     
                         print_log(
                             log_window, 
                             "Sequências iguais. Mensagem interceptada!\n"
@@ -208,6 +207,38 @@ int main(int argc, char **argv){
                                     line-1
                                 );
                                 for(unsigned int i = 0; i < rcv_msg.size; i++){
+                                    switch ((char)rcv_buffer[i]){
+                                    case 'X':
+                                    case 'x':
+                                        wattron(game_window, COLOR_PAIR(7) | A_BOLD);
+                                    break;
+                                    case 'P':
+                                        wattron(game_window, COLOR_PAIR(1) | A_BOLD);
+                                        break;
+                                    case 'R':
+                                        wattron(game_window, COLOR_PAIR(2) | A_BOLD);
+                                        break;
+                                    case 'B':
+                                        wattron(game_window, COLOR_PAIR(3) | A_BOLD);
+                                        break;
+                                    case 'G':
+                                        wattron(game_window, COLOR_PAIR(4) | A_BOLD);
+                                        break;
+                                    case 'Y':
+                                        wattron(game_window, COLOR_PAIR(5) | A_BOLD);
+                                        /* code */
+                                        break;
+                                    case '1':
+                                    case '2':
+                                    case '3':
+                                    case '4':
+                                    case '5':
+                                    case '6':
+                                        wattron(game_window, COLOR_PAIR(6) | A_BOLD);
+                                        break;
+                                    
+                                    }
+
                                     mvwprintw(game_window, line, col, "%c", rcv_msg.data[i]);
                                     wrefresh(game_window);
                                     col++;
@@ -239,10 +270,12 @@ int main(int argc, char **argv){
                             if (arc != NULL) {
                                 print_log(
                                     log_window, 
-                                    "Arquivo criado com sucesso e pronto para download\n"
+                                    "Arquivo criado com sucesso e pronto para download. Tamanho: %ld\n",
+                                    size_arc
                                 );
 
                                 total_donwloaded = 0;
+                                last_perce = -1;
                             }
                             // essa parte precisa de uma atenção depois
                             else {
@@ -262,7 +295,7 @@ int main(int argc, char **argv){
                                 send_control_msgs(socket, &send_msg, ERROS, curr_seq, send_buffer);
                                 while(1){
                                     if (recebe_mensagem(socket, 1000, aux_rcv_buffer, sizeof(aux_rcv_buffer)) != -1 && is_valid_crc(aux_rcv_buffer+14)){
-                                        deserialize_msg(aux_rcv_buffer, &aux_rcv_msg);
+                                        deserialize_msg(aux_rcv_buffer+14, &aux_rcv_msg);
                                         if (aux_rcv_msg.sequence == curr_seq && aux_rcv_msg.type == ACK){
                                             curr_seq = (curr_seq + 1) % 32;
                                             flag_err = 1;
@@ -284,13 +317,14 @@ int main(int argc, char **argv){
 
                                 int curr_perce = (int)(((float)total_donwloaded/size_arc)*100);
 
-                                if (curr_perce > last_perce)
+                                if (curr_perce > last_perce){
                                     print_log(
                                         log_window, 
                                         "Download: %d%%\n", 
                                         curr_perce
                                     );
                                     last_perce = curr_perce;
+                                }
                             }
                             break;
 
@@ -312,8 +346,8 @@ int main(int argc, char **argv){
                                 sprintf(cmd, "xdg-open %s > /dev/null 2>&1 &", path_arc);
                                 system(cmd);
                             }
+                            else flag_ntw = 1;
 
-                            flag_ntw = 1;
                             break;
                         
                         // Pacman coletou todas as pastilhas
