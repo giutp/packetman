@@ -19,10 +19,9 @@
 // + Erro: NULL
 static FILE *create_arc(char *name_size_arc, char *path_arc, unsigned long *size_arc){
     FILE *arc;
-    // size_arc ainda esta inutil, mas sera usado para log
     int range;
     char *ext, name_arc[16], *del;
-    char *path_download = "../assets/download/";
+    char *path_download = "assets/download/";
 
     del = strchr(name_size_arc, '-');
     
@@ -136,7 +135,7 @@ int main(int argc, char **argv){
     // Fluxo do cliente
     // recv -> verificação (crc+nack/ack) -> download/desenhar -> captar input -> criar mensagem -> enviar -> esperar (nack/ack do servidor) -> recv
     while(1){
-        int flag_ntw = 0;                                                                                       // flag do loop de recepção
+        int flag_ntw = 0, last_perce=-1;                                                                                       // flag do loop de recepção
         uint32_t size_line_map = 0, line = 1, col = 1;                                                               // tamanho da linha e linha atual
         uint64_t size_arc = 0, total_donwloaded = 0;                                                       // tamanho do arquivo de download e total baixado
         char path_arc[1024];                                                                                    // caminho do arquivo de download
@@ -282,11 +281,16 @@ int main(int argc, char **argv){
                             if (arc != NULL) {
                                 size_t bytes_write = fwrite(rcv_msg.data, 1, rcv_msg.size, arc);
                                 total_donwloaded += bytes_write;
-                                print_log(
-                                    log_window, 
-                                    "Download: %.2f%%\n", 
-                                    ((float)total_donwloaded/size_arc)*100
-                                );
+
+                                int curr_perce = (int)(((float)total_donwloaded/size_arc)*100);
+
+                                if (curr_perce > last_perce)
+                                    print_log(
+                                        log_window, 
+                                        "Download: %d%%\n", 
+                                        curr_perce
+                                    );
+                                    last_perce = curr_perce;
                             }
                             break;
 
@@ -304,9 +308,8 @@ int main(int argc, char **argv){
                                     log_window, 
                                     "Abrindo arquivo de donwload...\n"
                                 );
-                                char *xdg = "xdg-open ";
                                 char cmd[2048]; 
-                                sprintf(cmd, "%s%s", xdg, path_arc);
+                                sprintf(cmd, "xdg-open %s > /dev/null 2>&1 &", path_arc);
                                 system(cmd);
                             }
 
