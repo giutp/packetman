@@ -206,27 +206,29 @@ int main(int argc, char **argv){
                                     "Linha atual: %u\n", 
                                     line-1
                                 );
+
+                                int color_id = -1;
+                                
                                 for(unsigned int i = 0; i < rcv_msg.size; i++){
-                                    switch ((char)rcv_buffer[i]){
+                                    switch ((char)rcv_msg.data[i]){
                                     case 'X':
                                     case 'x':
-                                        wattron(game_window, COLOR_PAIR(7) | A_BOLD);
+                                        color_id = 7;
                                     break;
                                     case 'P':
-                                        wattron(game_window, COLOR_PAIR(1) | A_BOLD);
+                                        color_id = 1;
                                         break;
                                     case 'R':
-                                        wattron(game_window, COLOR_PAIR(2) | A_BOLD);
+                                        color_id = 2;
                                         break;
                                     case 'B':
-                                        wattron(game_window, COLOR_PAIR(3) | A_BOLD);
+                                        color_id = 3;
                                         break;
                                     case 'G':
-                                        wattron(game_window, COLOR_PAIR(4) | A_BOLD);
+                                        color_id = 4;
                                         break;
                                     case 'Y':
-                                        wattron(game_window, COLOR_PAIR(5) | A_BOLD);
-                                        /* code */
+                                        color_id = 5;
                                         break;
                                     case '1':
                                     case '2':
@@ -234,15 +236,20 @@ int main(int argc, char **argv){
                                     case '4':
                                     case '5':
                                     case '6':
-                                        wattron(game_window, COLOR_PAIR(6) | A_BOLD);
+                                        color_id = 6;
                                         break;
                                     
                                     }
 
+                                    if (color_id != -1) wattron(game_window, COLOR_PAIR(color_id) | A_BOLD);
+
                                     mvwprintw(game_window, line, col, "%c", rcv_msg.data[i]);
-                                    wrefresh(game_window);
+
+                                    if (color_id != -1) wattroff(game_window, COLOR_PAIR(color_id) | A_BOLD);
+
                                     col++;
                                 }
+                                wrefresh(game_window);
                                 if ((col-1) == size_line_map){
                                     col = 1;
                                     line++;
