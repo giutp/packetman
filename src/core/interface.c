@@ -20,3 +20,15 @@ void print_log(WINDOW *log_window, const char *log, ...){
 
     wrefresh(log_window);
 }
+
+void wclear_with_box(WINDOW *win, int v, int h){
+    wclear(win);
+    box(win, v, h);
+}
+
+void wdraw_center_ascii_art(WINDOW *win, const char **ascii, int h, int w, int lines){
+    for (int i = 0; i < lines; i++){
+        mvwprintw(win, ((h/2)-2)+i, (w/2)-16, "%s", ascii[i]);
+    }
+    wrefresh(win);
+}
