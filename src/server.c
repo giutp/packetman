@@ -65,19 +65,48 @@ int main(int argc, char **argv){
 
     while(1){
         if(game_response >= 1 && game_response <= 6){
-            // Envio do identificador da pastilha
-            create_control_msg(&send_msg, game_message_type, curr_seq);
-            send_bytes = serialize_msg(&send_msg, send_buffer+14);
-            send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
-
-            uint8_t file_buffer[MAX_DATA];
-            size_t bytes_read;
-
-            // envio dos dados parciais
-            while ((bytes_read = fread(file_buffer, 1, MAX_DATA, pellet_file)) > 0) {
-                create_data_msg( &send_msg, bytes_read, DADOS, curr_seq, file_buffer);
+            // Fluxo de nao enviar arquivo
+            if (!pellet_file){
+                create_control_msg(&send_msg, NFILE, curr_seq);
                 send_bytes = serialize_msg(&send_msg, send_buffer+14);
                 send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+            }
+            else{
+                fseek(pellet_file, 0, SEEK_END);
+                uint64_t size_arc = ftell(pellet_file);
+                char data[32];
+                snprintf(data, sizeof(data), "%d-%ld", game_response, size_arc);
+
+                // Envio do identificador da pastilha
+                create_data_msg(&send_msg, strlen(data), game_message_type, curr_seq, (uint8_t *)data);
+                send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+
+                if(rcv_msg.type == ERROS){
+                    printf("Cliente nao conseguiu criar arquivo, download nao sera feito\n");
+
+                    create_control_msg(&send_msg, ACK, curr_seq);
+                    send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                    send(socket, send_buffer, send_bytes+14, 0);
+                }
+                else{
+                uint8_t file_buffer[MAX_DATA];
+                size_t bytes_read;
+
+                // envio dos dados parciais
+                fseek(pellet_file, 0, SEEK_SET);
+                while ((bytes_read = fread(file_buffer, 1, MAX_DATA, pellet_file)) > 0) {
+                    create_data_msg( &send_msg, bytes_read, DADOS, curr_seq, file_buffer);
+                    send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                    send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+                }
+
+                create_control_msg(&send_msg, FIM_DA_TRANSMISSAO, curr_seq);
+                send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+
+                }
+                fclose(pellet_file);
             }
         }
         else if(game_response == -1 || game_response == 10){
