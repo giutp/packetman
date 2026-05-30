@@ -36,10 +36,10 @@ int main(int argc, char **argv){
     send_with_ack(socket, send_buffer, send_bytes+14, rcv_buffer, &rcv_msg, &curr_seq);
 
     uint8_t chunk[31];
-    size_t bytes_lidos;
+    size_t readed_bytes;
 
-    while((bytes_lidos = fread(chunk, 1, sizeof(chunk), arc)) > 0){
-        create_data_msg(&send_msg, bytes_lidos, DADOS, curr_seq, chunk);
+    while((readed_bytes = fread(chunk, 1, sizeof(chunk), arc)) > 0){
+        create_data_msg(&send_msg, readed_bytes, DADOS, curr_seq, chunk);
         send_bytes = serialize_msg(&send_msg, send_buffer+14);
         send_with_ack(socket, send_buffer, send_bytes + 14, rcv_buffer, &rcv_msg, &curr_seq);
     }

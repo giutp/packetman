@@ -57,9 +57,45 @@ int main(){
     // int k = getch();
     // endwin();
 
-    char *ext;
-    ext = ".txt";
-    printf("%s\n", ext);
+    init_interface();
+    
+                                  
+    // const char *ascii[] = {
+    //     "__   __         __      ___      ",
+    //     "\\ \\ / /__ _  _  \\ \\    / (_)_ _  ",
+    //     " \\ V / _ \\ || |  \\ \\/\\/ /| | ' \\ ",
+    //     "  |_|\\___/\\_,_|   \\_/\\_/ |_|_||_|"
+    // };
+
+    const char *ascii[] = {
+        " ___                 ___               ",
+        "/ __|__ _ _ __  ___ / _ \\__ _____ _ _  ",
+        "| (_ / _` | '  \\/ -_) (_) \\ V / -_) '_|",
+        "\\___\\__,_|_|_|_\\___|\\___/ \\_/\\___|_|   "
+    };
+    
+    
+    int w, h;
+    getmaxyx(stdscr, w, h);
+    refresh();
+    WINDOW *w1 = newwin(h/2, w, 0, 0);
+    box(w1, 0, 0);
+    wrefresh(w1);
+
+    WINDOW *w2 = newwin(h/2, w, 0, 23+(w/2));
+    box(w2, 0, 0);
+    wrefresh(w2);
+
+
+    for (int i = 0; i < 4; i++){
+        mvwprintw(w1, i+1, 1, "%s", ascii[i]);
+        wrefresh(w1);
+    }
+
+
+    getch();
+
+    endwin();
 
     return 0;
 }
