@@ -179,7 +179,7 @@ int main(int argc, char **argv){
                     send_control_msgs(socket, &send_msg, ACK, rcv_msg.sequence, send_buffer);
 
                     // Mensagem recebida é a esperada
-                    if (rcv_msg.sequence == expected_seq){     
+                    if (rcv_msg.sequence != expected_seq){     
                         print_log(
                             log_window, 
                             "Sequências iguais. Mensagem interceptada!\n"
@@ -225,6 +225,13 @@ int main(int argc, char **argv){
                             }
                             break;
 
+                        case NFILE:
+                            print_log(
+                                log_window,
+                                "Arquivo da pastilha não existe\n"
+                            );
+                            break;
+
                         // Criação e preparação de arquivo de download
                         case TXT:
                         case JPG:
@@ -235,6 +242,8 @@ int main(int argc, char **argv){
                                     log_window, 
                                     "Arquivo criado com sucesso e pronto para download\n"
                                 );
+
+                                total_donwloaded = 0;
                             }
                             // essa parte precisa de uma atenção depois
                             else {
@@ -289,6 +298,7 @@ int main(int argc, char **argv){
                             );
                             if (arc != NULL){
                                 fclose(arc);
+                                arc = NULL;
 
                                 print_log(
                                     log_window, 
@@ -304,22 +314,48 @@ int main(int argc, char **argv){
                             break;
                         
                         // Pacman coletou todas as pastilhas
-                        case VITORIA:
+                        case VITORIA:{
                             print_log(
                                 log_window, 
                                 "Mensagem de vitoria\n"
                             );
+                            wclear_with_box(game_window, 0, 0);
+
+                            const char *ascii_art[] = {
+                                "__   __         __      ___      ",
+                                "\\ \\ / /__ _  _  \\ \\    / (_)_ _  ",
+                                " \\ V / _ \\ || |  \\ \\/\\/ /| | ' \\ ",
+                                "  |_|\\___/\\_,_|   \\_/\\_/ |_|_||_|"
+                            };
+
+                            wdraw_center_ascii_art(game_window, ascii_art, game_h, game_w, 4);
+                            getch();
+
                             flag_ntw = flag_game = 1;
                             break;
+                        }
                         
                         // Pacman colidiu com fantasma
-                        case DERROTA:
+                        case DERROTA:{
                             print_log(
                                 log_window, 
                                 "Mensagem de derrota\n"
                             );
+
+                            wclear_with_box(game_window, 0, 0);
+
+                            const char *ascii_art[] = {
+                                " ___                 ___               ",
+                                "/ __|__ _ _ __  ___ / _ \\__ _____ _ _  ",
+                                "| (_ / _` | '  \\/ -_) (_) \\ V / -_) '_|",
+                                "\\___\\__,_|_|_|_\\___|\\___/ \\_/\\___|_|   "
+                            };
+                            wdraw_center_ascii_art(game_window, ascii_art, game_h, game_w, 4);
+                            getch();
+
                             flag_ntw = flag_game = 1;
                             break;
+                        }
                         }
 
                         if (flag_ntw) break;
@@ -358,8 +394,7 @@ int main(int argc, char **argv){
             case 'D': case 'd': case KEY_RIGHT: input = DIREITA; break;
             case 'S': case 's': case KEY_DOWN: input = BAIXO; break;
             case 'A': case 'a': case KEY_LEFT: input = ESQUERDA; break;
-            // Pause
-            // (VOU CRIAR UMA INTERFACE MAIS BONITINHA AINDA)
+            // Sair
             case 'Q': case 'q': flag_game = 1; break;
             }
         } while (input == -1);
@@ -370,10 +405,6 @@ int main(int argc, char **argv){
             enum_to_string(input)
         );
 
-        // Fim do jogo
-        // (TIPO SAIR)
-        if (flag_game) break;
-
         // ---------------------------------------------------------------------
         // Etapa de envio (send() + ack/nack/timeout)
         print_log(
@@ -382,6 +413,7 @@ int main(int argc, char **argv){
             curr_seq
         );
 
+        
         send_control_msgs(socket, &send_msg, input, curr_seq, send_buffer);
         int flag_rcv = 0;                                                                                       // flag de loop de espera de ack/nack
         while(1){
@@ -407,9 +439,12 @@ int main(int argc, char **argv){
                 );
                 send(socket, send_buffer, 19+send_buffer[15], 0);
             }
-
+            
             if (flag_rcv) break;
         }
+        
+        // Fim do jogo
+        if (flag_game) break;
     }
     
     endwin();
