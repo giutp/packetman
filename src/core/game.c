@@ -207,7 +207,7 @@ void build_submatrix(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t
     for (int i = 0; i < NUM_PELLETS; i++){
         if (!pellets[i].collected && is_inside_camera(pellets[i].position, coord_start, coord_end)){
             i_buffer = index_relative(pellets[i].position, coord_start, square_size);
-            buffer[i_buffer] = '0' + i;
+            buffer[i_buffer] = '1' + i;
         }
     }
 
@@ -248,7 +248,6 @@ int update_world(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pe
     if (id_pellet != 0){
         pellets[id_pellet-1].collected = 1;
         pacman->pellets++;
-        if (pacman->pellets >= 6) return 10;
 
         return id_pellet;
     }
