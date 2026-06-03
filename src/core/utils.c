@@ -33,7 +33,7 @@ void send_with_ack(int socket, uint8_t *send_buffer, int send_bytes, uint8_t *rc
     while (1) {
         send(socket, send_buffer, send_bytes + 14, 0);
 
-        if ((recebe_mensagem(socket, 1000, rcv_buffer, TAM_BUFFER) != -1) && is_valid_crc(rcv_buffer+14)) {
+        if ((recebe_mensagem(socket, 3000, rcv_buffer, TAM_BUFFER) != -1) && is_valid_crc(rcv_buffer+14)) {
             deserialize_msg(rcv_buffer+14, rcv_msg);
 
             if (rcv_msg->sequence == *curr_seq && rcv_msg->type == ACK) {
