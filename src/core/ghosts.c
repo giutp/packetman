@@ -26,7 +26,7 @@ static int check_wall_free(char map[N][N], coord_t ghost_coord, direction_t new_
 
     if (((ghost_coord.y >= 0) && (ghost_coord.y < N)) 
         && ((ghost_coord.x >= 0) && (ghost_coord.x < N)) 
-        && (map[ghost_coord.y][ghost_coord.x] != 'X')){
+        && (map[ghost_coord.y][ghost_coord.x] != 'X') && (map[ghost_coord.y][ghost_coord.x] != 'x')){
             *new_coord = ghost_coord;
             return 0;
         }
@@ -146,7 +146,7 @@ void move_ghosts(char map[N][N], ghost_t *ghosts){
             }
 
             break;
-        }
+            }
         }
     }
 }
