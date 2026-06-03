@@ -207,10 +207,17 @@ int main(int argc, char **argv){
                                     line-1
                                 );
 
-                                int color_id = -1;
+                                int offset_y = (game_h - size_line_map)/2;
+                                int offset_x = (game_w - size_line_map)/2;
+
                                 
                                 for(unsigned int i = 0; i < rcv_msg.size; i++){
+                                    int color_id = -1;
                                     switch ((char)rcv_msg.data[i]){
+                                    case '#':
+                                        color_id = 8;
+                                        break;
+
                                     case 'X':
                                     case 'x':
                                         color_id = 7;
@@ -243,7 +250,7 @@ int main(int argc, char **argv){
 
                                     if (color_id != -1) wattron(game_window, COLOR_PAIR(color_id) | A_BOLD);
 
-                                    mvwprintw(game_window, line, col, "%c", rcv_msg.data[i]);
+                                    mvwprintw(game_window, offset_y + line, offset_x + col, "%c", rcv_msg.data[i]);
 
                                     if (color_id != -1) wattroff(game_window, COLOR_PAIR(color_id) | A_BOLD);
 
@@ -439,7 +446,7 @@ int main(int argc, char **argv){
             case 'S': case 's': case KEY_DOWN: input = BAIXO; break;
             case 'A': case 'a': case KEY_LEFT: input = ESQUERDA; break;
             // Sair
-            case 'Q': case 'q': flag_game = 1; break;
+            case 'Q': case 'q': input = SAIR; flag_game = 1; break;
             }
         } while (input == -1);
 
@@ -462,7 +469,7 @@ int main(int argc, char **argv){
         int flag_rcv = 0;                                                                                       // flag de loop de espera de ack/nack
         while(1){
             // Timeout (de 1s -- por enquanto) + CRC
-            if ((recebe_mensagem(socket, 1000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer+14))){
+            if ((recebe_mensagem(socket, 3000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer+14))){
                 print_log(
                     log_window, 
                     "Servidor recebeu mensagem\n"
