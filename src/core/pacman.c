@@ -22,9 +22,8 @@ void move_pacman(char map[N][N], pacman_t *pacman, direction_t direction){
 
     if (((new_coord.y >= 0) && (new_coord.y < N)) 
         && ((new_coord.x >= 0) && (new_coord.x < N)) 
-        && (map[new_coord.y][new_coord.x] != 'x' || map[new_coord.y][new_coord.x] != 'X' )){
-        pacman->position.x = new_coord.x;
-        pacman->position.y = new_coord.y;
+        && (map[new_coord.y][new_coord.x] != 'x') && (map[new_coord.y][new_coord.x] != 'X')){
+        pacman->position = new_coord;
 
         pacman->count_mov++;
         if ((pacman->count_mov % 5 == 0) && (pacman->radius < MAX_RADIUS)) pacman->radius++;
