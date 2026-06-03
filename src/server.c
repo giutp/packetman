@@ -9,7 +9,7 @@
 #include "game.h"
 #include <arpa/inet.h>
 
-#define MAX_DATA 32
+#define MAX_DATA 31
 
 int main(int argc, char **argv){
     srand(time(NULL));
@@ -40,6 +40,8 @@ int main(int argc, char **argv){
 
     init_entities(map, &pacman, ghosts, pellets);
 
+    bind_pellets_files(pellets);
+
     printf("Inicializado entidades\n");
 
     // Inicialização variáveis de rede
@@ -61,12 +63,19 @@ int main(int argc, char **argv){
     // inicializado com valor para ser ignorado
     int game_message_type = -1;
     int game_response = -10;
+    int flag_quit = 0;
     FILE *pellet_file;     
 
     while(1){
         if(game_response >= 1 && game_response <= 6){
+            printf("Pastilha pega: %d\n", game_response);
+
+            pellet_file = fopen(pellets[game_response-1].filepath, "r");
+            game_message_type = pellets[game_response-1].arc_type;
+
             // Fluxo de nao enviar arquivo
             if (!pellet_file){
+                printf("Arquivo inexistente. Nao sera enviando para cliente DADOS\n");
                 create_control_msg(&send_msg, NFILE, curr_seq);
                 send_bytes = serialize_msg(&send_msg, send_buffer+14);
                 send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
@@ -76,9 +85,10 @@ int main(int argc, char **argv){
                 uint64_t size_arc = ftell(pellet_file);
                 char data[32];
                 snprintf(data, sizeof(data), "%d-%ld", game_response, size_arc);
+                printf("Tamanho do arquivo a ser enviado: %lu\n", size_arc);
 
                 // Envio do identificador da pastilha
-                create_data_msg(&send_msg, strlen(data), game_message_type, curr_seq, (uint8_t *)data);
+                create_data_msg(&send_msg, strlen(data)+1, game_message_type, curr_seq, (uint8_t *)data);
                 send_bytes = serialize_msg(&send_msg, send_buffer+14);
                 send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
 
@@ -94,8 +104,10 @@ int main(int argc, char **argv){
                 size_t bytes_read;
 
                 // envio dos dados parciais
-                fseek(pellet_file, 0, SEEK_SET);
+                rewind(pellet_file);
                 while ((bytes_read = fread(file_buffer, 1, MAX_DATA, pellet_file)) > 0) {
+                    printf("[DEBUG SERVER] fread leu %zu bytes do arquivo.\n", bytes_read);
+
                     create_data_msg( &send_msg, bytes_read, DADOS, curr_seq, file_buffer);
                     send_bytes = serialize_msg(&send_msg, send_buffer+14);
                     send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
@@ -108,8 +120,18 @@ int main(int argc, char **argv){
                 }
                 fclose(pellet_file);
             }
+
+            if (pacman.pellets == 6){
+                create_control_msg(&send_msg, VITORIA, curr_seq);
+                send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+
+                break;
+            }
         }
-        else if(game_response == -1 || game_response == 10){
+        else if(game_response == -1){
+            game_message_type = DERROTA;
+
             create_control_msg(&send_msg, game_message_type, curr_seq);
             send_bytes = serialize_msg(&send_msg, send_buffer+14);
             send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
@@ -166,8 +188,9 @@ int main(int argc, char **argv){
         free(submatrix_buffer);
 
         create_control_msg(&send_msg, FIM_DA_TRANSMISSAO, curr_seq);
-        int send_bytes = serialize_msg(&send_msg, send_buffer+14);
+        send_bytes = serialize_msg(&send_msg, send_buffer+14);
         send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
+
         while(1){
 
             recv(socket, rcv_buffer, sizeof(rcv_buffer), 0);
@@ -198,6 +221,9 @@ int main(int argc, char **argv){
                             case BAIXO:
                                 direction = DOWN;
                                 break;    
+                            case SAIR:
+                                flag_quit = 1;
+                                break;
                         }
 
                         break;
@@ -207,7 +233,7 @@ int main(int argc, char **argv){
                         printf("Enviando ACK de mensagem repetida\n");
                         create_control_msg(&send_msg, ACK, rcv_msg.sequence);
                         send_bytes = serialize_msg(&send_msg, send_buffer+14);
-                        send(socket, send_buffer, send_bytes, 0);
+                        send(socket, send_buffer, send_bytes+14, 0);
                     }
                     free(rcv_msg.data);
                 }
@@ -221,41 +247,9 @@ int main(int argc, char **argv){
             }
         }
 
-        game_response = update_world(map, &pacman, ghosts, pellets, direction);
+        if (flag_quit) break;
 
-        switch (game_response)
-        {
-            case -1:
-                game_message_type = DERROTA;
-                break;
-            case 1:
-                pellet_file = fopen("assets/files/1.txt", "r");
-                game_message_type = TXT;
-                break;
-            case 2:
-                pellet_file = fopen("assets/files/2.txt", "r");
-                game_message_type = TXT;
-                break;
-            case 3:
-                pellet_file = fopen("assets/files/3.jpg", "r");
-                game_message_type = JPG;
-                break;
-            case 4:
-                pellet_file = fopen("assets/files/4.jpg", "r");
-                game_message_type = JPG;
-                break;
-            case 5:
-                pellet_file = fopen("assets/files/5.mp4", "r");
-                game_message_type = MP4;
-                break;
-            case 6:
-                pellet_file = fopen("assets/files/6.mp4", "r");
-                game_message_type = MP4;
-                break;    
-            case 10:
-                game_message_type = VITORIA;       
-                break;
-        }
+        game_response = update_world(map, &pacman, ghosts, pellets, direction);
     }
 
     return 0;
