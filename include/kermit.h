@@ -6,10 +6,6 @@
 #define START_MARKER 0x7e
 #define TAM_BUFFER 50
 
-/* TODO: 
-    * melhorar os comentarios
-    * talvez mudar nome das funcoes e parametros
-*/
 // Tipo de mensagem do protocolo kermit
 typedef enum kermit_types_t {
     ACK,                                // mensagem recebida

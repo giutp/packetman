@@ -15,10 +15,9 @@ typedef struct pellet {
     int collected;                  // flag de pastilha coletada
 } pellet_t;
 
-// Atrela dois de cada tipo arquivo as pastilhas
-// Retorna
-// + -2: diretório inexistente
-// + -1: arquivos insuficientes ou formato inválido
+// Atrela os arquivos presentes em assets/files/ às pastilhas
+// Define o tipo do arquivo de cada pastilha
+// Retorna:
 // +  0: todos foram atrelados com sucesso
 int bind_pellets_files(pellet_t *pellets);
 

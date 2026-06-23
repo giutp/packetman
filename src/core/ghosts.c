@@ -1,4 +1,4 @@
-#include <stdlib.h>     // rand()
+#include <stdlib.h>
 #include "ghosts.h"
 
 // Checa se a nova coordenada é válida (dentro do mapa e não-parede)

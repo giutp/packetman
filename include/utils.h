@@ -1,8 +1,9 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-// Tamanho do mapa (matriz) do jogo
-#define N 40
+
+#define N 40                // Tamanho do mapa (matriz) do jogo
+#define RECV_BUFFER (rcv_buffer+14)
 
 #include "kermit.h"
 
@@ -24,6 +25,13 @@ typedef struct coord {
 // Retorna:
 // + String correspondente ao type
 char *enum_to_string(types_t type);
+
+// Cria o arquivo mandado pelo servidor para download
+// Salva em path_arc o caminho do arquivo aberto
+// Retorna:
+// + Sucesso: Ponteiro para o arquivo criado
+// + Erro: NULL
+FILE *create_arc(char *name_size_arc, char *path_arc, unsigned long *size_arc);
 
 // Envia mensagem e faz o controle de ACK e NACK
 void send_with_ack(int socket, uint8_t *send_buffer, int send_bytes, uint8_t *rcv_buffer, kermit_t *rcv_msg, int *curr_seq);

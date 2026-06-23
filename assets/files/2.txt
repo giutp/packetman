@@ -1,4 +1,71 @@
-점점 더 갈구해, oh
-You know I want you bad, show me mercy (mercy)
-우연 속 운명의 강한 얽힘 (huh)
-두 눈 속의 서로를 찾은 그 순간
+\section{Introdução}
+Implementação do jogo Pacman baseado em turno, usando um cliente para interface e um servidor para o jogo. 
+
+\section{O que foi realizado}
+
+\subsection{Organização de arquivos}
+
+\begin{itemize}
+    \item \textit{assets}: arquivos que são importados o código
+    \begin{itemize}
+        \item \textit{files}: arquivos de texto, imagem ou vídeo usados ao coletar as pastilhas
+        \item \textit{map\_deafault}: Arquivo usado como mapa caso não enviado pelo usuário
+    \end{itemize}
+    \item \textit{include}: bibliotecas estáticas dos arquivos código-fonte.
+    \item \textit{src}: código fonte do trabalho
+    \begin{itemize}
+        \item \textit{core}: arquivos com o código fonte do jogo e funções auxiliares.
+        \item \textit{network}: arquivo fonte com funções relacionadas ao protocolo kermit.
+        \item \textit{server.c}: código fonte do servidor.
+        \item \textit{client.c}: código fonte do cliente.
+    \end{itemize}
+\end{itemize}
+
+Além disso foram incluídos os arquivos de teste usados para testar diferentes funcionalidades do trabalho
+
+\subsection{Compilação e execução}
+
+Foi criado uma makefile para compilação específica de cada um dos executáveis usados na execução do jogo. O arquivo contém as seguintes intruções:
+
+\begin{itemize}
+    \item make server: cria o executável do servidor.
+    \item make client: cria o executável o cliente.
+    \item make all: cria ambos os executáveis.
+    \item make clean: excluí os executáveis e os binários. 
+\end{itemize}
+
+% \subsection{Sobre a conexão com a rede}
+
+% A conexão foi feita usando raw socket. O usuário informa o interface de rede quando inicia o executável e 
+
+\subsection{Protocolo kermit e tipos de mensagem}
+
+Além disso, foi adicionado alguns tipos a mais de mensagem para facilitar a transmissão de mensagens específicas, sendo o principal delo o tipo \texttt{RAIO}, usado para passar o tamanho atual do raio de visão do pacman, dado essencial para a exibição do jogo de forma correta
+
+\subsection{Comunicação server e client}
+
+A implementação da comunicação foi feito sem o uso de janela deslizante, operando de maneira em que as requisições ocorrem de forma síncrona e com ordem definida, usando a lógica \textit{stop and wait}.
+
+\section{Fluxo de execução}
+
+O fluxo de execução do cliente e servidor funcionam de maneira semelhante. O servidor é o primeiro a enviar mensagem quando o jogo inicia. 
+
+\subsection{Cliente}
+O cliente possui o seguinte fluxo. De início ele espera receber um mapa linha por linha para desenhá-lo usando o \texttt{ncurses}, em seguida é iniciado a etapa de verificar o \textit{input}, o usuário pode escolher entre parar a execução ou escolhar a movimentação. Por fim, é feito o envio para o servidor, enviando pacote com o tipo de entrada e esperando \texttt{ACK}.
+
+Quando é interceptado o pacote, é verificado o tipo para realizar a ação podendo ser: calcular o raio, desenhar o mapa, informar que o arquivo de download não existe, tipo do arquivo de download, os bytes de download, fim de mensagem, mensagem de vitória ou mensagem de derrota. O tipo do arquivo de download, além de criar o arquivo, pode iniciar uma tratativa de erro caso ocorra algum erro na criação do arquivo.
+
+\subsection{Server}
+O servidor possui um fluxo semelhante ao cliente como já mencionado. Diferentemente do cliente, de início ele envia a primeira visualização do mapa com o jogador centralizado. Após validar o envio, é verificado qual o \textit{input} recebido pelo cliente para, em seguida, atualizar o jogo. A atualização do jogo movimenta os fantasmas, o Pacman e checa se algum alguma pastilha foi coletada. 
+
+Na etapa de atualização, é atribuído à variável \texttt{game\_response} o que resultou a atulização, podendo ser vitória, derrota ou coleta de pastilha. De volta ao início do laço, é verificado o valor da variável, podendo encerrar o jogo ou enviar o arquivo da pastilha coletada.
+
+
+\subsection{Sobre o Jogo}
+
+Para simplificar a lógica dos fantamas, eles não têm colisão entre si e também não têm com as pastilhas. O que ocorre é que eles podem ocupar a mesma posição simultâneamente, tendo uma ordem de prioridade em relação a qual vai ser exibido na visualização pelo cliente.
+
+Como já foi mencioando, foi utilizada a biblioteca \texttt{ncurses} para exibir o mapa no terminal e permitir uma interface mais limpa e adequada para o jogo. Além disso, a exibição ocorre apenas da parte vísivel do mapa, a qual é centralizada no meio da tela de exibição do jogo. 
+
+\section{Conclusão}
+Para uma melhor visualização do código fonte, acesse o link \url{https://github.com/hassevini/pacman-redes/} através da plataforma Github.

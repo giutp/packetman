@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-
 #include <time.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
+
 #include "kermit.h"
 #include "game.h"
-#include <arpa/inet.h>
 
 #define MAX_DATA 31
 

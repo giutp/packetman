@@ -12,58 +12,14 @@
 #define MIN_W 80
 #define MIN_H 24
 
-// Cria o arquivo mandado pelo servidor para download
-// Salva em path_arc o caminho do arquivo aberto
-// Retorna:
-// + Sucesso: Ponteiro para o arquivo criado
-// + Erro: NULL
-static FILE *create_arc(char *name_size_arc, char *path_arc, unsigned long *size_arc){
-    FILE *arc;
-    int range;
-    char *ext, name_arc[16], *del;
-    char *path_download = "assets/download/";
-
-    del = strchr(name_size_arc, '-');
-    
-    if (del != NULL){
-        *del = '\0';
-        range = strtoul(name_size_arc, NULL, 10);
-
-        switch (range){
-        case 1:
-        case 2:
-            ext = ".txt";
-            break;
-        case 3:
-        case 4:
-            ext = ".jpg";
-            break;
-        case 5:
-        case 6:
-            ext = ".mp4";
-            break;
-        }
-        sprintf(name_arc, "%s%s", name_size_arc, ext);
-        sprintf(path_arc, "%s%s", path_download, name_arc);
-        *size_arc = strtoul(del + 1, NULL, 10);
-
-        arc = fopen(path_arc, "wb");
-        return arc;
-    }
-
-    return NULL;
-}
-
 int main(int argc, char **argv){
     // =============================================================================
     // Inicalizações da rede
-
     if (argc < 2){
         fprintf(stderr, "Necessário informar a placa de rede!\n");
         return -1;
     }
 
-    // Criação do soquete
     int socket = create_raw_socket(argv[1]);
 
     // =============================================================================
@@ -74,9 +30,9 @@ int main(int argc, char **argv){
     uint8_t rcv_buffer[TAM_BUFFER];
 
     // Ethernet
-    uint8_t mac_orig[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-    uint8_t mac_dest[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    uint16_t eth_type   = 0x8888;
+    uint8_t  mac_orig[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+    uint8_t  mac_dest[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    uint16_t eth_type    = 0x8888;
     memcpy(send_buffer, mac_dest, 6);
     memcpy(send_buffer+6, mac_orig, 6);
     memcpy(send_buffer+12, &eth_type, 2);
@@ -94,8 +50,6 @@ int main(int argc, char **argv){
     // Checagem de tamanho de janela
     // x = colunas (largura da tela)
     // y = linhas (altura da tela)
-    // 80x24 = 80 colunas e 24 linhas
-    // ncurses ao contrario (igual matriz em C [linhas][colunas] = [y][x])
     int console_width, console_heght;
     getmaxyx(stdscr, console_heght, console_width);                                                         // tamanho da janela aberta (terminal)
 
@@ -131,15 +85,16 @@ int main(int argc, char **argv){
 
     // =============================================================================
     // Loop game 
-    int flag_game = 0;                                                                                          // flag do loop game
-    // Fluxo do cliente
+    int flag_game = 0;                                                                                      // flag do loop game
+
+    // Fluxo cliente
     // recv -> verificação (crc+nack/ack) -> download/desenhar -> captar input -> criar mensagem -> enviar -> esperar (nack/ack do servidor) -> recv
     while(1){
-        int flag_ntw = 0, last_perce=-1;                                                                                       // flag do loop de recepção
-        uint32_t size_line_map = 0, line = 1, col = 1;                                                               // tamanho da linha e linha atual
-        uint64_t size_arc = 0, total_donwloaded = 0;                                                       // tamanho do arquivo de download e total baixado
-        char path_arc[1024];                                                                                    // caminho do arquivo de download
-        FILE *arc = NULL;                                                                                       // arquivo a ser criado (download)
+        int flag_ntw = 0, last_perce= -1;                                                                   // flag do loop de recepção e porcentagem de download
+        uint32_t size_line_map = 0, line = 1, col = 1;                                                      // tamanho da linha e linha e coluna atual
+        uint64_t size_arc = 0, total_donwloaded = 0;                                                        // tamanho do arquivo de download e total baixado
+        char path_arc[1024];                                                                                // caminho do arquivo de download
+        FILE *arc = NULL;                                                                                   // arquivo a ser criado (download)
         while(1){
             // ---------------------------------------------------------------------
             // Etapa de recepção (rcv() + verificação + desenhar/download)
@@ -150,26 +105,26 @@ int main(int argc, char **argv){
                 expected_seq
             );
 
-            // Mensagem do servidor -- qualquer outras mensagens serão ignoradas
-            if (is_valid_protocol(rcv_buffer+14)){
+            // Mensagem do servidor
+            if (is_valid_protocol(RECV_BUFFER)){
                 print_log(
                     log_window, 
                     "Marcador de início validado com sucesso (%02X)\n", 
                     START_MARKER
                 );
 
-                // Mensagem válida -- ACK
-                if(is_valid_crc(rcv_buffer+14)){
+                // Mensagem válida
+                if(is_valid_crc(RECV_BUFFER)){
                     print_log(
                         log_window, 
                         "CRC válido (%02X) e enviando ACK\n", 
                         rcv_buffer[18+rcv_buffer[15]]
                     );
 
-                    deserialize_msg(rcv_buffer+14, &rcv_msg);                                                      // Monta a struct kermit
+                    deserialize_msg(RECV_BUFFER, &rcv_msg);                                                 // Monta a struct kermit
                     print_log(
                             log_window, 
-                            "Mensagem deserializada, tamanho: %d | sequencia: %d | tipo: %s\n", 
+                            "Mensagem deserializada. Tamanho: %d | Sequencia: %d | Tipo: %s\n", 
                             rcv_msg.size, 
                             rcv_msg.sequence, 
                             enum_to_string(rcv_msg.type)
@@ -186,8 +141,8 @@ int main(int argc, char **argv){
 
                         // Verificação de tipo de mensagem dentre todos os possíveis tipos de recepção do cliente
                         switch (rcv_msg.type){
+
                         // Visão do Pacman
-                        
                         case RAIO:
                             size_line_map = *(uint32_t *)(rcv_msg.data) * 2 + 1;
                             print_log(
@@ -198,7 +153,7 @@ int main(int argc, char **argv){
                             );
                             break;
 
-                        // Desenhar o mapa
+                        // Desenhar o mapa centralizado
                         case VISUALIZACAO:
                             if (size_line_map != 0){
                                 print_log(
@@ -209,15 +164,14 @@ int main(int argc, char **argv){
 
                                 int offset_y = (game_h - size_line_map)/2;
                                 int offset_x = (game_w - size_line_map)/2;
-
                                 
                                 for(unsigned int i = 0; i < rcv_msg.size; i++){
                                     int color_id = -1;
+                                    // Escolhe a cor da entidade
                                     switch ((char)rcv_msg.data[i]){
                                     case '#':
                                         color_id = 8;
                                         break;
-
                                     case 'X':
                                     case 'x':
                                         color_id = 7;
@@ -245,17 +199,19 @@ int main(int argc, char **argv){
                                     case '6':
                                         color_id = 6;
                                         break;
-                                    
                                     }
 
+                                    // Liga a cor momentaneamente
                                     if (color_id != -1) wattron(game_window, COLOR_PAIR(color_id) | A_BOLD);
 
                                     mvwprintw(game_window, offset_y + line, offset_x + col, "%c", rcv_msg.data[i]);
 
+                                    // Desliga a cor usada
                                     if (color_id != -1) wattroff(game_window, COLOR_PAIR(color_id) | A_BOLD);
 
                                     col++;
                                 }
+
                                 wrefresh(game_window);
                                 if ((col-1) == size_line_map){
                                     col = 1;
@@ -269,6 +225,7 @@ int main(int argc, char **argv){
                             }
                             break;
 
+                        // Arquivo da pastilha não existe
                         case NFILE:
                             print_log(
                                 log_window,
@@ -281,6 +238,8 @@ int main(int argc, char **argv){
                         case JPG:
                         case MP4:
                             arc = create_arc((char *)rcv_msg.data, path_arc, &size_arc);
+
+                            // Arquivo de download criado com sucesso
                             if (arc != NULL) {
                                 print_log(
                                     log_window, 
@@ -291,24 +250,23 @@ int main(int argc, char **argv){
                                 total_donwloaded = 0;
                                 last_perce = -1;
                             }
-                            // essa parte precisa de uma atenção depois
+                            
+                            // Falha ao criar o arquivo de download
                             else {
                                 flag_ntw = 1;
                                 print_log(
                                     log_window, 
                                     "Erro ao criar arquivo de donwload. Não será iniciado download\n"
                                 );
-
                                 
-                                // Função fopen() não conseguiu criar arquivo. Não será feito download do arquivo pelo cliente
                                 // Subrotina de tratamento de erro
-                                int flag_err = 0;                                                               // flag de tratamento de erro
+                                int flag_err = 0;                                                           // flag de tratamento de erro
                                 uint8_t aux_rcv_buffer[50];
                                 kermit_t aux_rcv_msg;
                                 
                                 send_control_msgs(socket, &send_msg, ERROS, curr_seq, send_buffer);
                                 while(1){
-                                    if (recebe_mensagem(socket, 1000, aux_rcv_buffer, sizeof(aux_rcv_buffer)) != -1 && is_valid_crc(aux_rcv_buffer+14)){
+                                    if (recebe_mensagem(socket, 3000, aux_rcv_buffer, sizeof(aux_rcv_buffer)) != -1 && is_valid_crc(aux_rcv_buffer+14)){
                                         deserialize_msg(aux_rcv_buffer+14, &aux_rcv_msg);
                                         if (aux_rcv_msg.sequence == curr_seq && aux_rcv_msg.type == ACK){
                                             curr_seq = (curr_seq + 1) % 32;
@@ -329,8 +287,8 @@ int main(int argc, char **argv){
                                 size_t bytes_write = fwrite(rcv_msg.data, 1, rcv_msg.size, arc);
                                 total_donwloaded += bytes_write;
 
+                                // Porcentagem de download é inteira
                                 int curr_perce = (int)(((float)total_donwloaded/size_arc)*100);
-
                                 if (curr_perce > last_perce){
                                     print_log(
                                         log_window, 
@@ -348,6 +306,8 @@ int main(int argc, char **argv){
                                 log_window, 
                                 "Fim do pacote\n"
                             );
+
+                            // 
                             if (arc != NULL){
                                 fclose(arc);
                                 arc = NULL;
@@ -420,7 +380,7 @@ int main(int argc, char **argv){
                         log_window, 
                         "CRC checado, inválido e enviando NACK (%02X != %02X)\n", 
                         rcv_buffer[18+rcv_buffer[15]], 
-                        calculate_crc8(rcv_buffer+14, 4+rcv_buffer[15])
+                        calculate_crc8(RECV_BUFFER, 4+rcv_buffer[15])
                     );
                     send_control_msgs(socket, &send_msg, NACK, expected_seq, send_buffer);
                 }
@@ -438,7 +398,7 @@ int main(int argc, char **argv){
 
         int input = -1;
         do{
-            int key = getch();                                                                                  // getch bloqueia fluxo
+            int key = getch();                                                                              // getch bloqueia fluxo
             switch(key){
             // Movimento
             case 'W': case 'w': case KEY_UP: input = CIMA; break;
@@ -464,17 +424,17 @@ int main(int argc, char **argv){
             curr_seq
         );
 
-        
         send_control_msgs(socket, &send_msg, input, curr_seq, send_buffer);
-        int flag_rcv = 0;                                                                                       // flag de loop de espera de ack/nack
+        int flag_rcv = 0;                                                                                   // flag de loop de espera de ack/nack
         while(1){
-            // Timeout (de 1s -- por enquanto) + CRC
-            if ((recebe_mensagem(socket, 3000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(rcv_buffer+14))){
+            // Timeout + CRC
+            if ((recebe_mensagem(socket, 3000, rcv_buffer, sizeof(rcv_buffer)) != -1) && (is_valid_crc(RECV_BUFFER))){
                 print_log(
                     log_window, 
                     "Servidor recebeu mensagem\n"
                 );
-                deserialize_msg(rcv_buffer+14, &rcv_msg);
+
+                deserialize_msg(RECV_BUFFER, &rcv_msg);
                 if (rcv_msg.sequence == curr_seq && rcv_msg.type == ACK){
                     wprintw(log_window, "Pacote recebido com sucesso pelo servidor\n");
                     wrefresh(log_window);
@@ -486,7 +446,7 @@ int main(int argc, char **argv){
             else {
                 print_log(
                     log_window, 
-                    "TIMEOUT OU CRC INVALIDO. Reenviando mensagem...\n"
+                    "TIMEOUT OU CRC INVÁLIDO. Reenviando mensagem...\n"
                 );
                 send(socket, send_buffer, 19+send_buffer[15], 0);
             }
@@ -499,5 +459,9 @@ int main(int argc, char **argv){
     }
     
     endwin();
+
+    // Apagando arquivos baixados
+    system("rm -rf assets/download/");
+
     return 0;
 }

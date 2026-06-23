@@ -1,5 +1,4 @@
 #include "pellets.h"
-#include "kermit.h"
 
 int bind_pellets_files(pellet_t *pellets){
     pellets[0].filepath = "assets/files/1.txt"; 

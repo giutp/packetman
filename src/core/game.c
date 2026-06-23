@@ -50,9 +50,6 @@ static int index_relative(coord_t e, coord_t st_c, int size_grid){
 }
 
 int read_map(char *filepath, char map[N][N]){
-    // TODO: 
-    // vale a pena checar se o arquivo eh um .csv?
-    // vale a pena checar se esta sendo inserindo o quantidade de entidades permitidas?p
     FILE *arc = fopen(filepath, "r");
 
     if (!arc) return 0;

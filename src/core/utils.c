@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "utils.h"
 
@@ -24,6 +25,43 @@ char *enum_to_string(types_t type){
     case FIM_DA_TRANSMISSAO: return "FIM_DA_TRANSMISSAO"; break;
     case VITORIA: return "VITORIA"; break;
     case DERROTA: return "DERROTA"; break;
+    }
+
+    return NULL;
+}
+
+FILE *create_arc(char *name_size_arc, char *path_arc, unsigned long *size_arc){
+    FILE *arc;
+    int range;
+    char *ext, name_arc[16], *del;
+    char *path_download = "assets/download/";
+
+    del = strchr(name_size_arc, '-');
+    
+    if (del != NULL){
+        *del = '\0';
+        range = strtoul(name_size_arc, NULL, 10);
+
+        switch (range){
+        case 1:
+        case 2:
+            ext = ".txt";
+            break;
+        case 3:
+        case 4:
+            ext = ".jpg";
+            break;
+        case 5:
+        case 6:
+            ext = ".mp4";
+            break;
+        }
+        sprintf(name_arc, "%s%s", name_size_arc, ext);
+        sprintf(path_arc, "%s%s", path_download, name_arc);
+        *size_arc = strtoul(del + 1, NULL, 10);
+
+        arc = fopen(path_arc, "wb");
+        return arc;
     }
 
     return NULL;

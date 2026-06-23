@@ -44,8 +44,8 @@ void build_submatrix(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t
 
 // Verifica e atualiza todas as entidades do mapa
 // Retorna:
-// + -1: Pacman morreu (game over)
-// + 0: entidades apenas se deslocaram
+// +  -1: Pacman morreu (game over)
+// +   0: entidades apenas se deslocaram
 // + [1..6]: id da pastilha coletada
 // + 10: Pacman coletou todas as pastilhas (win)
 int update_world(char map[N][N], pacman_t *pacman, ghost_t *ghosts, pellet_t *pellets, direction_t direction);
