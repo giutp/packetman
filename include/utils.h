@@ -1,8 +1,9 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <stdio.h>
 
-#define N 40                // Tamanho do mapa (matriz) do jogo
+#define N 40                                                            // Tamanho do mapa (matriz) do jogo
 #define RECV_BUFFER (rcv_buffer+14)
 
 #include "kermit.h"
