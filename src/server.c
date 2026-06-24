@@ -128,7 +128,7 @@ int main(int argc, char **argv){
                 // envio dos dados parciais
                 rewind(pellet_file);
                 while ((bytes_read = fread(file_buffer, 1, MAX_DATA, pellet_file)) > 0) {
-                    printf("[DEBUG SERVER] fread leu %zu bytes do arquivo.\n", bytes_read);
+                    printf("fread leu %zu bytes do arquivo.\n", bytes_read);
 
                     create_data_msg( &send_msg, bytes_read, DADOS, curr_seq, file_buffer);
                     send_bytes = serialize_msg(&send_msg, send_buffer+14);
