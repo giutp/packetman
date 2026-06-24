@@ -461,7 +461,7 @@ int main(int argc, char **argv){
     endwin();
 
     // Apagando arquivos baixados
-    system("rm -rf assets/download/");
+    system("rm assets/download/*.txt assets/download/*.jpg assets/download/*.mp4");
 
     return 0;
 }

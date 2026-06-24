@@ -81,25 +81,47 @@ int main(int argc, char **argv){
                 send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
             }
             else{
+                int flag_err = 1;
+
                 fseek(pellet_file, 0, SEEK_END);
                 uint64_t size_arc = ftell(pellet_file);
                 char data[32];
-                snprintf(data, sizeof(data), "%d-%ld", game_response, size_arc);
+                snprintf(data, sizeof(data), "%d-%lu", game_response, size_arc);
                 printf("Tamanho do arquivo a ser enviado: %lu\n", size_arc);
 
                 // Envio do identificador da pastilha
                 create_data_msg(&send_msg, strlen(data)+1, game_message_type, curr_seq, (uint8_t *)data);
                 send_bytes = serialize_msg(&send_msg, send_buffer+14);
-                send_with_ack(socket, send_buffer, send_bytes, rcv_buffer, &rcv_msg, &curr_seq);
-
-                if(rcv_msg.type == ERROS){
-                    printf("Cliente nao conseguiu criar arquivo, download nao sera feito\n");
-
-                    create_control_msg(&send_msg, ACK, curr_seq);
-                    send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                while (1){
                     send(socket, send_buffer, send_bytes+14, 0);
+                    if (recebe_mensagem(socket, 3000, rcv_buffer, TAM_BUFFER) != -1 && is_valid_crc(rcv_buffer+14)){
+                        deserialize_msg(rcv_buffer+14, &rcv_msg);
+
+                        if (rcv_msg.sequence == curr_seq && rcv_msg.type == ACK){
+                            if (rcv_msg.type == ACK){
+                                printf("Recebido ACK com sucesso\n");
+                                curr_seq = (curr_seq + 1) % 32;
+                                break;
+                            }
+                            else if (rcv_msg.type == ERROS){
+                                printf("Cliente nao conseguiu criar arquivo, download nao sera feito\n");
+
+                                create_control_msg(&send_msg, ACK, curr_seq);
+                                send_bytes = serialize_msg(&send_msg, send_buffer+14);
+                                send(socket, send_buffer, send_bytes+14, 0);
+
+                                curr_seq = (curr_seq + 1) % 32;
+                                flag_err = 0;
+                                
+                                free(rcv_msg.data);
+                                break;
+                            }
+                        }
+                    }
+                    else printf("TIMEOUT OU CRC INVALIDO\n");
                 }
-                else{
+
+                if (flag_err){
                 uint8_t file_buffer[MAX_DATA];
                 size_t bytes_read;
 
