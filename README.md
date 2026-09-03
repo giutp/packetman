@@ -288,6 +288,8 @@ O código-fonte deste projeto está distribuído sob a licença **MIT**. Consult
 
 GiuTP — [github.com/GiuTP](https://github.com/GiuTP)
 
+E-mail — giulianotpt@gmail.com
+
 hassevini — [github.com/hassevini](https://github.com/hassevini)
 
 Link do projeto: [https://github.com/GiuTP/PacketMan](https://github.com/GiuTP/PacketMan)
