@@ -312,7 +312,7 @@ Link do projeto: [https://github.com/GiuTP/PacketMan](https://github.com/GiuTP/P
 [license-shield]: https://img.shields.io/github/license/GiuTP/PacketMan.svg?style=for-the-badge
 [license-url]: https://github.com/GiuTP/PacketMan/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://www.linkedin.com/in/giuliano-picoli/
+[linkedin-url]: https://www.linkedin.com/in/giuliano-tavares/
 [C-badge]: https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white
 [C-url]: https://en.wikipedia.org/wiki/C_(programming_language)
 [Linux-badge]: https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black
