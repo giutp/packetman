@@ -7,7 +7,7 @@
 
 <br />
 <div align="center">
-  <h3 align="center">👾 packetman</h3>
+  <h3 align="center">👾 PacketMan</h3>
 
   <p align="center">
     Jogo estilo Pac-Man no modelo cliente-servidor sobre Ethernet — trabalho final da disciplina de Redes de Computadores 1 (CI1058) na UFPR.
