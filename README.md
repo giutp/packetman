@@ -7,14 +7,14 @@
 
 <br />
 <div align="center">
-  <h3 align="center">👾 PacketMan</h3>
+  <h3 align="center">👾 packetman</h3>
 
   <p align="center">
     Jogo estilo Pac-Man no modelo cliente-servidor sobre Ethernet — trabalho final da disciplina de Redes de Computadores 1 (CI1058) na UFPR.
     <br />
-    <a href="https://github.com/GiuTP/PacketMan/issues/new?labels=bug">Reportar Bug</a>
+    <a href="https://github.com/giutp/packetman/issues/new?labels=bug">Reportar Bug</a>
     &middot;
-    <a href="https://github.com/GiuTP/PacketMan/issues/new?labels=enhancement">Sugerir Melhoria</a>
+    <a href="https://github.com/giutp/packetman/issues/new?labels=enhancement">Sugerir Melhoria</a>
   </p>
 </div>
 
@@ -56,7 +56,7 @@
 
 ![imagem exemplo do jogo em execução](assets/screenshots/running.png)
 
-**PacketMan** é um jogo estilo Pac-Man implementado no modelo **cliente-servidor**, desenvolvido em linguagem C para a disciplina **Redes de Computadores 1 (CI1058)** da **Universidade Federal do Paraná (UFPR)**.
+**packetman** é um jogo estilo Pac-Man implementado no modelo **cliente-servidor**, desenvolvido em linguagem C para a disciplina **Redes de Computadores 1 (CI1058)** da **Universidade Federal do Paraná (UFPR)**.
 
 A comunicação entre as duas máquinas é feita via **cabo Ethernet**, usando **raw sockets** e um protocolo inspirado no **Kermit** (simplificado e adaptado às necessidades do trabalho). O servidor concentra toda a lógica do jogo (posições, colisões, pastilhas, fantasmas), enquanto o cliente é responsável exclusivamente pela interface interativa com o jogador, renderizada via **ncurses**.
 
@@ -169,7 +169,7 @@ O projeto é organizado em módulos com responsabilidades bem definidas:
 ## 📁 Estrutura do Projeto
 
 ```
-PacketMan/
+packetman/
 ├── assets/
 │   ├── files/               arquivos das pastilhas (1.txt, 2.txt, 3.jpg, 4.jpg, 5.mp4, 6.mp4)
 │   ├── map_default/         mapa padrão em formato .csv
@@ -219,8 +219,8 @@ sudo apt install build-essential libncurses-dev -y
 
 1. Clone o repositório:
    ```sh
-   git clone https://github.com/GiuTP/PacketMan.git
-   cd PacketMan
+   git clone https://github.com/giutp/packetman.git
+   cd packetman
    ```
 
 2. Compile os dois executáveis:
@@ -286,13 +286,13 @@ O código-fonte deste projeto está distribuído sob a licença **MIT**. Consult
 
 ## 📬 Contato
 
-GiuTP — [github.com/GiuTP](https://github.com/GiuTP)
+giutp — [github.com/giutp](https://github.com/giutp)
 
 E-mail — giulianotpt@gmail.com
 
 hassevini — [github.com/hassevini](https://github.com/hassevini)
 
-Link do projeto: [https://github.com/GiuTP/PacketMan](https://github.com/GiuTP/PacketMan)
+Link do projeto: [https://github.com/giutp/packetman](https://github.com/giutp/packetman)
 
 <p align="right">(<a href="#readme-top">voltar ao topo</a>)</p>
 
@@ -307,12 +307,12 @@ Link do projeto: [https://github.com/GiuTP/PacketMan](https://github.com/GiuTP/P
 ---
 
 <!-- MARKDOWN LINKS & IMAGES -->
-[stars-shield]: https://img.shields.io/github/stars/GiuTP/PacketMan.svg?style=for-the-badge
-[stars-url]: https://github.com/GiuTP/PacketMan/stargazers
-[issues-shield]: https://img.shields.io/github/issues/GiuTP/PacketMan.svg?style=for-the-badge
-[issues-url]: https://github.com/GiuTP/PacketMan/issues
-[license-shield]: https://img.shields.io/github/license/GiuTP/PacketMan.svg?style=for-the-badge
-[license-url]: https://github.com/GiuTP/PacketMan/blob/main/LICENSE
+[stars-shield]: https://img.shields.io/github/stars/giutp/packetman.svg?style=for-the-badge
+[stars-url]: https://github.com/giutp/packetman/stargazers
+[issues-shield]: https://img.shields.io/github/issues/giutp/packetman.svg?style=for-the-badge
+[issues-url]: https://github.com/giutp/packetman/issues
+[license-shield]: https://img.shields.io/github/license/giutp/packetman.svg?style=for-the-badge
+[license-url]: https://github.com/giutp/packetman/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/giuliano-tavares/
 [C-badge]: https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white
